@@ -8,41 +8,98 @@ Este repositorio contiene el frontend de la aplicación web Axon, diseñado para
 
 ## Estado Actual ✅
 
-Actualmente, el proyecto se encuentra en una fase inicial de configuración.
-
-*   Configuración básica de un proyecto React con Vite y TypeScript.
-*   Integración y configuración de Tailwind CSS para estilos.
-*   Implementación de una pantalla de entrada mínima con "Hello World".
-
-## Tecnologías Principales 🛠️
-
-*   **React:** Biblioteca principal para construir la interfaz de usuario.
-*   **Vite:** Herramienta de construcción rápida para el desarrollo frontend.
-*   **TypeScript:** Lenguaje superset de JavaScript que añade tipado estático.
-*   **Tailwind CSS:** Framework CSS utility-first para estilizar rápidamente.
+Actualmente, el proyecto ha sido reorganizado con un flujo de navegación adecuado utilizando React Router y una estructura de componentes limpia.
 
 ## Estructura de Carpetas 🗂️
 
-La estructura inicial sigue la configuración estándar de Vite con React y TypeScript:
+La estructura del proyecto ahora es la siguiente:
 
-*   `src/`: Contiene el código fuente de la aplicación (componentes, lógica, estilos principales).
-    *   `src/main.tsx`: Punto de entrada de la aplicación.
-    *   `src/App.tsx`: Componente principal de la aplicación.
-    *   `src/index.css`: Archivo CSS principal (puede incluir directivas de Tailwind).
-*   `public/`: Contiene assets estáticos.
-*   `index.html`: Archivo HTML principal.
-*   `package.json`: Manifiesto del proyecto y gestor de dependencias.
-*   `vite.config.ts`: Configuración de Vite.
-*   `tailwind.config.js`: Configuración de Tailwind CSS.
+```
+src/
+├── components/          # Componentes de UI reutilizables
+│   ├── Logo.tsx        # Componente de Logo con propiedades personalizables
+│   ├── FormInput.tsx   # Componente de entrada de formulario estandarizado
+│   ├── Button.tsx      # Componente de botón con múltiples variantes
+│   └── index.ts        # Archivo de exportación para importaciones sencillas
+├── pages/              # Componentes de página (componentes de ruta)
+│   ├── LoginPage.tsx   # Página de inicio de sesión con panel de imagen
+│   ├── RegisterPage.tsx # Página de registro
+│   └── DashboardPage.tsx # Dashboard después del inicio de sesión
+├── layouts/            # Componentes de diseño (layouts)
+│   └── AuthLayout.tsx  # Layout común para páginas de autenticación
+├── hooks/              # Hooks personalizados de React (vacío por ahora)
+├── utils/              # Funciones de utilidad (vacío por ahora)
+└── assets/             # Activos estáticos (imágenes, etc.)
+```
 
-*(Esta estructura se ampliará a medida que el proyecto crezca).*
+## Flujo de Navegación 🧭
 
-## En Desarrollo 🚧
+### Rutas
+- `/` - Página de inicio de sesión (`LoginPage`)
+- `/register` - Página de registro (`RegisterPage`)
+- `/dashboard` - Página del dashboard (`DashboardPage`)
 
-*   Integración completa con el backend (registro, inicio de sesión, etc.).
-*   Implementación de las funcionalidades de gestión de proyectos, tareas, chat y videollamadas.
-*   Desarrollo de pantallas adicionales y componentes reutilizables.
-*   Mejoras en la interfaz de usuario y experiencia del usuario.
+### Características de Navegación
+- **Inicio de sesión a Registro**: Enlace en la parte inferior del formulario de inicio de sesión
+- **Registro a Inicio de sesión**: Enlace en la parte inferior del formulario de registro
+- **Inicio de sesión a Dashboard**: Enlace de demostración (reemplazar con lógica de autenticación real)
+- **Dashboard a Cerrar sesión**: Enlace en el encabezado (regresa al inicio de sesión)
+
+## Componentes 🧩
+
+### Componentes Reutilizables
+
+#### Componente Logo
+```tsx
+<Logo 
+  className="justify-center" 
+  showText={true} 
+  textSize="text-3xl" 
+/>
+```
+
+#### Componente FormInput
+```tsx
+<FormInput
+  id="email"
+  type="email"
+  placeholder="Email"
+  label="Email"
+  required
+/>
+```
+
+#### Componente Button
+```tsx
+<Button 
+  type="submit" 
+  variant="primary"
+  onClick={handleClick}
+>
+  Click me
+</Button>
+```
+
+Variantes disponibles: `primary`, `secondary`, `orange`, `gray`
+
+### Componentes de Layout
+
+#### AuthLayout
+Proporciona un estilo consistente para las páginas de autenticación con contenido centrado y tema oscuro.
+
+## Estilo 🎨
+- Utiliza Tailwind CSS para el estilizado
+- Tema oscuro con fondo `gray-900`
+- Color de acento naranja (`#orange-500`)
+- Diseño responsivo con enfoque mobile-first
+
+## Próximos Pasos ➡️
+1.  Implementar la lógica de autenticación real.
+2.  Añadir validación de formularios.
+3.  Crear rutas protegidas.
+4.  Añadir estados de carga.
+5.  Implementar manejo de errores.
+6.  Añadir más páginas (perfil, salas de chat, etc.).
 
 ## Requisitos para Ejecutar 🧪
 
