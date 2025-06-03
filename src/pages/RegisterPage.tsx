@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Logo, FormInput, Button } from '../components';
 import AuthLayout from '../layouts/AuthLayout';
