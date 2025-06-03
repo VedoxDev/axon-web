@@ -1,4 +1,3 @@
-import React from 'react';
 import LogoImage from '../assets/images/Logo_Login.png';
 
 interface LogoProps {
