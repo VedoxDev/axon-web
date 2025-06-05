@@ -1,4 +1,5 @@
 import React from 'react';
+import TaskBoard from './TaskBoard/TaskBoard';
 
 interface MainContentProps {
   selectedItem?: string | null;
@@ -12,7 +13,7 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 text-sm text-gray-400">
             <span>Dashboard</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
             <span className="text-white">Vista General</span>
@@ -25,8 +26,10 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem }) => {
 
       {/* Main Content Area */}
       <div className="flex-1 p-6 overflow-y-auto">
-        {selectedItem ? (
-          // Content when an item is selected
+        {selectedItem === 'tasks' ? (
+          <TaskBoard />
+        ) : selectedItem ? (
+          // Content when an item is selected (other than tasks)
           <div className="h-full">
             <h2 className="text-2xl font-bold text-white mb-6">
               Contenido de: {selectedItem}
@@ -56,9 +59,6 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem }) => {
 
               {/* Description */}
               <p className="text-gray-400 mb-6 leading-relaxed">
-                Selecciona un proyecto o inicia una conversación desde el menú lateral 
-                para comenzar a trabajar. Aquí podrás gestionar tus proyectos, 
-                comunicarte con tu equipo y realizar un seguimiento de tus tareas.
               </p>
 
               {/* Quick Actions */}
