@@ -67,18 +67,7 @@ function LoginPage() {
               <span className="flex-shrink mx-3 text-gray-500 text-sm">O</span> {/* Adjusted margin and text size */}
               <div className="flex-grow border-t border-gray-600"></div>
             </div>
-
-            {/* Social Login Buttons */}
-            <button
-              type="button"
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-3 flex items-center justify-center text-sm"
-            >
-              {/* Reduced padding, margin, and text size */}
-              {/* Placeholder for Google Logo */}
-              <span className="mr-2 text-base">G</span> {/* Adjusted text size */}
-              Login with Google Account
-            </button>
-
+            
             {/* Enter with ID Button */}
             <button
               type="button"

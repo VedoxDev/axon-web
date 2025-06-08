@@ -14,6 +14,19 @@ interface SidebarSection {
   sectionIcon: React.ReactNode;
 }
 
+interface Project {
+  id: string;
+  name: string;
+  color: string;
+}
+
+interface Member {
+  id: string;
+  name: string;
+  avatar: string;
+  status: 'online' | 'offline' | 'away';
+}
+
 const CollapsibleSidebar: React.FC<SidebarProps> = ({ 
   isOpen, 
   isPinned, 
@@ -22,6 +35,26 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
   onMenuItemSelect 
 }) => {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project>({
+    id: '1',
+    name: 'Axon Dashboard',
+    color: 'from-indigo-500 to-purple-600'
+  });
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+
+  const members: Member[] = [
+    { id: '1', name: 'Juan Pérez', avatar: 'JP', status: 'online' },
+    { id: '2', name: 'María García', avatar: 'MG', status: 'away' },
+    { id: '3', name: 'Carlos López', avatar: 'CL', status: 'offline' },
+  ];
+
+  const projects: Project[] = [
+    { id: '1', name: 'Axon Dashboard', color: 'from-indigo-500 to-purple-600' },
+    { id: '2', name: 'Project Alpha', color: 'from-blue-500 to-cyan-600' },
+    { id: '3', name: 'Project Beta', color: 'from-green-500 to-emerald-600' },
+    { id: '4', name: 'Project Gamma', color: 'from-red-500 to-pink-600' },
+  ];
 
   const handleItemClick = (itemId: string) => {
     setSelectedItem(itemId);
@@ -32,6 +65,11 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
     if (!isPinned) {
       onToggle();
     }
+  };
+
+  const handleProjectSelect = (project: Project) => {
+    setSelectedProject(project);
+    setIsProjectMenuOpen(false);
   };
 
   const menuSections: SidebarSection[] = [
@@ -64,7 +102,7 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
     },
     {
       id: "activity",
-      title: "ACtividad",
+      title: "Actividad",
       sectionIcon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -102,49 +140,138 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className={`
-      bg-gray-800 border-r border-gray-700 h flex flex-col transition-all duration-300 ease-in-out
-      ${isOpen ? 'w-75' : 'w-0'}
+      bg-gray-800 border-r border-gray-700 flex flex-col transition-all duration-300 ease-in-out
+      ${isOpen ? 'w-75' : 'w-12'}
       ${!isOpen ? 'overflow-hidden' : 'overflow-visible'}
     `}>
       {/* Sidebar Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
-        {/* Logo and Title Area */}
-        <div className="flex items-center space-x-3 min-w-0 flex-grow mr-4">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">A</span>
-          </div>
+      <div className={`flex flex-col border-b border-gray-700 flex-shrink-0 ${isOpen ? 'px-6' : 'px-3'}`}>
+        {/* Top Section: Logo, Title, and Actions */}
+        <div className="flex items-center justify-between py-4">
+          {/* Logo and Title Area */}
           {isOpen && (
-            <span className="text-white font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
-              Axon Dashboard
-            </span>
+            <div className="flex items-center space-x-3 min-w-0 flex-grow mr-4 relative">
+              <button
+                onClick={() => setIsProjectMenuOpen(!isProjectMenuOpen)}
+                className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity"
+              >
+                <span className="text-white font-bold text-sm">A</span>
+              </button>
+              <span className="text-white font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+                {selectedProject.name}
+              </span>
+              
+              {/* Project Selection Dropdown */}
+              {isProjectMenuOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50">
+                  <div className="py-1">
+                    {projects.map((project) => (
+                      <button
+                        key={project.id}
+                        onClick={() => handleProjectSelect(project)}
+                        className={`w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center space-x-2 ${
+                          selectedProject.id === project.id ? 'bg-gray-700 text-white' : ''
+                        }`}
+                      >
+                        <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${project.color}`}></div>
+                        <span>{project.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
-        </div>
-        {/* Sidebar Actions (Pin/Close Buttons) */}
-        {isOpen && (
-          <div className="flex items-center space-x-2 flex-shrink-0 pl-4">
+
+          {/* Sidebar Actions (Pin/Close Buttons) */}
+          <div className={`flex items-center space-x-2 flex-shrink-0 ${isOpen ? 'pl-4' : 'w-full justify-center'}`}>
             <button
-              onClick={onPin}
-              className={`p-1.5 rounded transition-colors ${
-                isPinned
-                  ? 'text-white-400 hover:text-white bg-blue-400 '
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
-              }`}
-              title={isPinned ? 'Desanclar sidebar' : 'Anclar sidebar'}
+              onClick={onToggle}
+              className={`p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors ${!isOpen ? 'w-8 h-8 flex items-center justify-center' : ''}`}
+              title="Toggle sidebar"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            {!isPinned && (
-              <button
-                onClick={onToggle}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            {isOpen && (
+              <>
+                <button
+                  onClick={onPin}
+                  className={`p-1.5 rounded transition-colors ${
+                    isPinned
+                      ? 'text-white-400 hover:text-white bg-blue-400 '
+                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  }`}
+                  title={isPinned ? 'Desanclar sidebar' : 'Anclar sidebar'}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                </button>
+              </>
             )}
+          </div>
+        </div>
+
+        {/* Bottom Section: Members */}
+        {isOpen && (
+          <div className="flex items-center justify-between pb-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-400">Miembros</span>
+              <div className="flex items-center space-x-0.5">
+                {members.slice(0, 4).map((member, idx) => (
+                  <div
+                    key={member.id}
+                    className="relative z-10"
+                    style={{ marginLeft: idx === 0 ? 0 : '-0.7rem' }}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium text-white border-2 border-gray-800 ${
+                        typeof member.avatar === 'string' && member.avatar.startsWith('http')
+                          ? ''
+                          : 'bg-gray-600'
+                      }`}
+                      style={{
+                        backgroundImage:
+                          typeof member.avatar === 'string' && member.avatar.startsWith('http')
+                            ? `url(${member.avatar})`
+                            : undefined,
+                        backgroundSize: 'cover',
+                      }}
+                    >
+                      {!(typeof member.avatar === 'string' && member.avatar.startsWith('http')) &&
+                        member.avatar}
+                    </div>
+                    <div
+                      className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-gray-800 ${
+                        member.status === 'online'
+                          ? 'bg-green-500'
+                          : member.status === 'away'
+                          ? 'bg-yellow-500'
+                          : 'bg-gray-500'
+                      }`}
+                    />
+                  </div>
+                ))}
+                {members.length > 4 && (
+                  <div
+                    className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-semibold text-white border-2 border-gray-800 z-0"
+                    style={{ marginLeft: '-0.7rem' }}
+                  >
+                    +{members.length - 4}
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setIsMembersOpen(!isMembersOpen)}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           </div>
         )}
       </div>
@@ -152,6 +279,7 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
       {/* Navigation - Scrollable */}
       {isOpen && (
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-5 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+          {/* Menu Sections */}
           {menuSections.map((section) => (
             <button
               key={section.id}
@@ -170,7 +298,6 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
           ))}
         </div>
       )}
-      
     </div>
   );
 };

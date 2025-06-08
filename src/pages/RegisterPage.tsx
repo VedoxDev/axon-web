@@ -7,7 +7,9 @@ function RegisterPage() {
     <AuthLayout>
       <div className="w-full max-w-md">
         {/* Logo Section (Centered) */}
-        <Logo className="justify-center mb-8" />
+        <div className="flex justify-center mb-8">
+          <Logo />
+        </div>
 
         {/* Title and Subtitle Section (Centered) */}
         <div className="mb-8 text-center w-full">

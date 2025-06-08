@@ -1,51 +1,55 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Logo, CollapsibleSidebar, MainContent } from '../components';
+import CollapsibleSidebar from '../components/CollapsibleSidebar';
+import MainContent from '../components/MainContent';
+import Logo from '../components/Logo';
 
-function DashboardPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarPinned, setSidebarPinned] = useState(false);
+const DashboardPage: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarPinned, setIsSidebarPinned] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<'home' | 'friends' | 'conversations'>('home');
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const toggleSidebarPin = () => {
-    setSidebarPinned(!sidebarPinned);
-    if (!sidebarPinned) {
-      setSidebarOpen(true);
-    }
-  };
-
-  const handleMenuItemSelect = (itemId: string) => {
-    setSelectedMenuItem(itemId);
+  const handleLogoClick = () => {
+    setSelectedMenuItem(null);
+    setActiveView('home');
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
-      {/* Header */}
+      {/* Main Web Header */}
       <header className="bg-gray-800 shadow-lg border-b border-gray-700 px-6 py-4 flex-shrink-0 relative z-30">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            {/* Hamburger Menu Button */}
-            <button
-              onClick={toggleSidebar}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-              aria-label="Toggle sidebar"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            {/* Logo and Title */}
-            <div className="flex items-center space-x-3">
+            <div onClick={handleLogoClick} className="cursor-pointer">
               <Logo />
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-semibold text-white">Axon</h1>
-                <p className="text-xs text-gray-400">Sistema de Gestión de Proyectos</p>
-              </div>
+            </div>
+            <div className="flex items-center space-x-2 text-sm">
+              <button
+                onClick={() => setActiveView('home')}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-2 ${
+                  activeView === 'home'
+                    ? 'bg-gray-700 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>Inicio</span>
+              </button>
+              <button
+                onClick={() => setActiveView('conversations')}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-2 ${
+                  activeView === 'conversations'
+                    ? 'bg-gray-700 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>Conversaciones</span>
+              </button>
             </div>
           </div>
 
@@ -95,15 +99,6 @@ function DashboardPage() {
                 <p className="text-sm font-medium text-white">Juan Pérez</p>
                 <p className="text-xs text-gray-400">Administrador</p>
               </div>
-              <Link 
-                to="/" 
-                className="text-gray-400 hover:text-white transition-colors p-1"
-                title="Cerrar sesión"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </Link>
             </div>
           </div>
         </div>
@@ -113,20 +108,20 @@ function DashboardPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Collapsible Sidebar */}
         <CollapsibleSidebar
-          isOpen={sidebarOpen}
-          isPinned={sidebarPinned}
-          onToggle={toggleSidebar}
-          onPin={toggleSidebarPin}
-          onMenuItemSelect={handleMenuItemSelect}
+          isOpen={isSidebarOpen}
+          isPinned={isSidebarPinned}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          onPin={() => setIsSidebarPinned(!isSidebarPinned)}
+          onMenuItemSelect={setSelectedMenuItem}
         />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <MainContent selectedItem={selectedMenuItem} />
+          <MainContent selectedItem={selectedMenuItem} activeView={activeView} />
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default DashboardPage; 

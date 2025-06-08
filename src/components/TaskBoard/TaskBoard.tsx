@@ -5,7 +5,7 @@ import type { Task, TaskColumnType } from './types.ts';
 // CSS to style the horizontal scrollbar
 const scrollbarStyle = `
   .styled-scrollbar::-webkit-scrollbar {
-    height: 8px; /* height of horizontal scrollbar */
+    height: 5px; /* height of horizontal scrollbar */
   }
 
   .styled-scrollbar::-webkit-scrollbar-track {
@@ -29,6 +29,10 @@ const scrollbarStyle = `
 const initialTasks: Record<TaskColumnType, Task[]> = {
   assigned: [
     { id: '1', title: 'Diseñar login', description: 'Crear la pantalla de login para la app.' },
+    { id: '2', title: 'Reunión inicial', description: 'Kickoff con el equipo de desarrollo.' },
+    { id: '2', title: 'Reunión inicial', description: 'Kickoff con el equipo de desarrollo.' },
+    { id: '2', title: 'Reunión inicial', description: 'Kickoff con el equipo de desarrollo.' },
+    { id: '2', title: 'Reunión inicial', description: 'Kickoff con el equipo de desarrollo.' },
     { id: '2', title: 'Reunión inicial', description: 'Kickoff con el equipo de desarrollo.' },
   ],
   inProgress: [
@@ -91,8 +95,8 @@ const TaskBoard: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full overflow-x-auto styled-scrollbar">
-      <div className="flex space-x-6 min-w-[900px] pb-4" style={{ height: 'calc(100vh - 120px)' }}>
+    <div className="w-full h-135 overflow-x-auto styled-scrollbar">
+      <div className="flex space-x-6 min-w-[900px] pb-4" style={{ height: '100%' }}>
         {columnOrder.map(col => (
           <TaskColumn
             key={col}

@@ -45,7 +45,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 
   return (
     <div
-      className={`flex flex-col ${colors.bg} rounded-xl shadow-lg ${colors.border} w-72 min-w-[18rem] h-full transition-colors ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}
+      className={`flex flex-col ${colors.bg} rounded-xl shadow-lg ${colors.border} w-72 hide-scrollbar min-w-[18rem] h-full transition-colors ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}
       onDragOver={e => { e.preventDefault(); }}
       onDrop={() => onDrop(columnId)}
     >
