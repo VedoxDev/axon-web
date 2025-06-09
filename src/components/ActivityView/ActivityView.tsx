@@ -65,7 +65,7 @@ const ActivityView: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col bg-gray-900 text-white border border-orange-700 ">
+    <div className="flex flex-col bg-[#151718] text-white ">
       <div>
         <div className="mb-4">
           <div className="text-sm text-gray-400 mb-2">{completionPercentage}% completed</div>
@@ -104,7 +104,7 @@ const ActivityView: React.FC = () => {
       <div className="flex-1">
         <div className="flex space-x-6 min-w-max pb-4 h-100">
           {filteredSections.map((section, index) => (
-            <div key={index} className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-lg flex-1 min-w-[500px] flex flex-col">
+            <div key={index} className="bg-[#282828] border border-gray-700 rounded-lg p-4 shadow-lg flex-1 min-w-[500px] flex flex-col">
               <h3 className="text-lg font-semibold mb-4 text-white">{section.title}</h3>
               <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar">
                 <div className="space-y-3">

@@ -6,10 +6,13 @@ import AnnouncementsView from './AnnouncementsView/AnnouncementsView';
 import FilesView from './FilesView/FilesView';
 import CalendarView from './CalendarView/CalendarView';
 import MembersPanel from './MembersPanel';
+import ChatPanel from './ChatPanel';
+import GeneralChat from './GeneralChat/GeneralChat';
 
 interface MainContentProps {
   selectedItem?: string | null;
   activeView: 'home' | 'friends' | 'conversations';
+  selectedChatId: string | null;
 }
 
 interface Member {
@@ -20,6 +23,17 @@ interface Member {
   roleTitle?: string;
   status?: 'online' | 'away' | 'offline';
 }
+
+const style = `
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+`;
 
 // Members data for header
 const members: Member[] = [
@@ -34,23 +48,37 @@ const members: Member[] = [
   { id: '9', name: 'Extra 5', avatar: 'E5', role: 'member', roleTitle: 'Designer', status: 'online' },
 ];
 
-const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView }) => {
+const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView, selectedChatId }) => {
   const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
 
   // Render the appropriate view based on selectedItem
   const renderSelectedView = () => {
+    if (selectedItem === 'chat') {
+      // If selectedItem is 'chat', we show the full conversation only if a chat is selected
+      if (selectedChatId) {
+        return <ChatPanel activeChannel={selectedChatId} isSidebarView={false} />;
+      } else {
+        return null; // Or a placeholder if no specific chat is selected in main view
+      }
+    }
+
     switch (selectedItem) {
-      case 'tasks':
-        return <TaskBoard />;
-      case 'chat':
-        return <div className="h-full p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-6">Chat del Proyecto</h2>
-              {/* Chat content will go here */}
+      case 'home':
+        return (
+          <div className="h-full flex flex-col items-center justify-center p-6 ">
+            <div className="max-w-2xl w-full bg-[#151718] border border-gray-700 rounded-2xl p-8 flex flex-col items-center shadow-lg">
+              <svg className="w-12 h-12 text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <h2 className="text-2xl font-bold text-white mb-2">Bienvenido al Dashboard de Axon</h2>
+              <p className="text-gray-400 mb-4 text-center">Selecciona un proyecto o una función del menú lateral para comenzar.</p>
+              {/* You can add more dashboard content here */}
+              <div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400">(Contenido de la vista principal)</div>
             </div>
           </div>
-        </div>;
+        );
+      case 'tasks':
+        return <TaskBoard />;
       case 'calendar':
         return <CalendarView />;
       case 'activity':
@@ -61,143 +89,46 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView }) =
         return <MeetingsView />;
       case 'announcements':
         return <AnnouncementsView />;
+      case 'general-chat':
+        return <GeneralChat />;
       default:
         // Home, Friends, or Conversations view
         if (activeView === 'home') {
           return (
-            <div className="h-full">
-              <div className="max-w-7xl mx-auto p-6">
-                {/* Welcome Section */}
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 mb-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h1 className="text-2xl font-bold text-white mb-2">¡Bienvenido, Juan Pérez!</h1>
-                      <p className="text-gray-400">Aquí tienes un resumen de tu actividad y proyectos.</p>
-                    </div>
-                    <div className="flex space-x-4">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Nuevo Proyecto</span>
-                      </button>
-                      <button className="bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <span>Mensajes</span>
-                      </button>
-                    </div>
-                  </div>
+            <div className="flex flex-col items-center justify-center h-full w-full">
+              <div className=" flex flex-row space-x-10 w-full max-w-5xl">
+                {/* Tarjeta 1 */}
+                <div className="flex-1 bg-[#151718] border border-gray-700 rounded-2xl p-8 flex flex-col items-center shadow-lg">
+                  <svg className="w-12 h-12 text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <h2 className="text-2xl font-bold text-white mb-2">¡Comienza un nuevo proyecto!</h2>
+                  <p className="text-gray-400 mb-4 text-center">Crea un proyecto para organizar tus tareas, equipos y objetivos.</p>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors text-lg">Nuevo Proyecto</button>
                 </div>
 
-                {/* Statistics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-white">Proyectos Activos</h3>
-                      <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="text-3xl font-bold text-white mb-2">6</div>
-                    <div className="text-sm text-gray-400">+2 desde el mes pasado</div>
-                  </div>
-
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-white">Tareas Pendientes</h3>
-                      <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="text-3xl font-bold text-white mb-2">23</div>
-                    <div className="text-sm text-gray-400">5 vencidas</div>
-                  </div>
-
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-white">Mensajes Sin Leer</h3>
-                      <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="text-3xl font-bold text-white mb-2">15</div>
-                    <div className="text-sm text-gray-400">3 urgentes</div>
-                  </div>
-
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-white">Reuniones Hoy</h3>
-                      <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="text-3xl font-bold text-white mb-2">4</div>
-                    <div className="text-sm text-gray-400">Próxima en 30 min</div>
-                  </div>
-                </div>
-
-                {/* Recent Activity */}
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-white mb-4">Actividad Reciente</h2>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-white">Nuevo proyecto creado: <span className="font-semibold">Axon Dashboard</span></p>
-                        <p className="text-sm text-gray-400">Hace 2 horas</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-white">Tarea completada: <span className="font-semibold">Diseñar interfaz de usuario</span></p>
-                        <p className="text-sm text-gray-400">Hace 3 horas</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-white">Nuevo mensaje de <span className="font-semibold">María García</span></p>
-                        <p className="text-sm text-gray-400">Hace 5 horas</p>
-                      </div>
-                    </div>
-                  </div>
+                {/* Tarjeta 2 */}
+                <div className="flex-1 bg-[#151718] border border-gray-700 rounded-2xl p-8 flex flex-col items-center shadow-lg">
+                  <svg className="w-12 h-12 text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <h2 className="text-2xl font-bold text-white mb-2">¡Comienza a chatear con amigos!</h2>
+                  <p className="text-gray-400 mb-4 text-center">Conéctate y conversa con tus amigos en tiempo real.</p>
+                  <button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors text-lg">Chatear Ahora</button>
                 </div>
               </div>
             </div>
           );
         } else if (activeView === 'friends') {
           return (
-            <div className="h-full p-3">
-              <div className="h-full">
+            <div className="h-full p-2 sm:p-3 md:p-4 ">
+              <div className="h-full w-full">
                 <div className="max-w-4xl mx-auto">
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                    <h2 className="text-xl font-bold text-white mb-6">Amigos</h2>
-                    <div className="space-y-4">
+                  <div className="bg-[#151718] border border-gray-700 rounded-lg p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Amigos</h2>
+                    <div className="space-y-3 sm:space-y-4">
                       {/* Friend List */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         {members.map((member) => (
                           <div key={member.id} className="flex items-center space-x-4 p-4 bg-gray-700/50 rounded-lg">
                             <div className="relative">
@@ -249,16 +180,16 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView }) =
         } else {
           // Conversations view
           return (
-            <div className="h-full p-3">
-              <div className="h-full">
+            <div className="h-full p-2 sm:p-3 md:p-4 ">
+              <div className="h-full w-full">
                 <div className="max-w-4xl mx-auto">
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                    <h2 className="text-xl font-bold text-white mb-6">Conversaciones</h2>
-                    <div className="space-y-4">
+                  <div className="bg-[#151718] border border-gray-700 rounded-lg p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Conversaciones</h2>
+                    <div className="space-y-3 sm:space-y-4">
                       {/* Conversation List */}
-                      <div className="space-y-4">
+                      <div className="space-y-3 sm:space-y-4">
                         {members.map((member) => (
-                          <div key={member.id} className="flex items-center space-x-4 p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700/70 transition-colors cursor-pointer">
+                          <div key={member.id} className="flex items-center space-x-4 p-4 bg-gray-700/50 rounded-lg">
                             <div className="relative">
                               <div
                                 className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium text-white ${
@@ -288,14 +219,14 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView }) =
                               />
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <h3 className="text-white font-medium">{member.name}</h3>
-                                <span className="text-sm text-gray-400">12:30 PM</span>
-                              </div>
-                              <p className="text-sm text-gray-400 truncate">
-                                Último mensaje de la conversación...
-                              </p>
+                              <h3 className="text-white font-medium">{member.name}</h3>
+                              <p className="text-sm text-gray-400">{member.roleTitle}</p>
                             </div>
+                            <button className="text-blue-400 hover:text-blue-300 transition-colors">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -309,17 +240,7 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView }) =
     }
   };
 
-  return (
-    <div className="flex-1 p-3 bg-gray-900 flex flex-col">
-      {/* Main Content Area with Members Panel */}
-      <div className="flex-1 h-full relative">
-        {renderSelectedView()}
-
-        {/* Members Panel */}
-        
-      </div>
-    </div>
-  );
+  return <div className="flex-1 flex flex-col h-full overflow-y-auto w-full hide-scrollbar">{renderSelectedView()}</div>;
 };
 
 export default MainContent; 

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TaskCard from './TaskCard.tsx';
 import type { Task, TaskColumnType } from './types.ts';
+import TaskModal from './TaskModal.tsx';
 
 // CSS to hide scrollbar
 const style = `
@@ -22,6 +23,7 @@ interface TaskColumnProps {
   onDrop: (to: TaskColumnType) => void;
   isDragOver: boolean | null;
   onAddTask: (column: TaskColumnType) => void;
+  onUpdateTask: (updatedTask: Task) => void;
 }
 
 const columnColors: Record<TaskColumnType, { bg: string; border: string }> = {
@@ -40,16 +42,33 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
   onDrop,
   isDragOver,
   onAddTask,
+  onUpdateTask,
 }) => {
   const colors = columnColors[columnId];
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  const handleCardClick = (task: Task) => {
+    setSelectedTask(task);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedTask(null);
+  };
+
+  const handleUpdateTask = (updatedTask: Task) => {
+    // In a real application, you would update the task in your global state or backend
+    console.log('Task updated:', updatedTask);
+    // For now, we'll just close the modal. TaskBoard will need to handle actual updates.
+    handleCloseModal();
+  };
 
   return (
     <div
-      className={`flex flex-col ${colors.bg} rounded-xl shadow-lg ${colors.border} w-72 hide-scrollbar min-w-[18rem] h-full transition-colors ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}
+      className={`flex flex-col ${colors.bg} rounded-xl shadow-lg ${colors.border}  hide-scrollbar min-w-[18rem] h-145 transition-colors ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}
       onDragOver={e => { e.preventDefault(); }}
       onDrop={() => onDrop(columnId)}
     >
-      <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center justify-between">
         <span className="text-lg font-semibold text-white">{title}</span>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-4 hide-scrollbar">
@@ -58,6 +77,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
             key={task.id}
             task={task}
             onDragStart={() => onDragStart(task, columnId)}
+            onClick={handleCardClick}
           />
         ))}
       </div>
@@ -73,6 +93,14 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 
       {/* Inject styles */}
       <style>{style}</style>
+
+      {selectedTask && (
+        <TaskModal
+          task={selectedTask}
+          onClose={handleCloseModal}
+          onUpdateTask={onUpdateTask}
+        />
+      )}
     </div>
   );
 };

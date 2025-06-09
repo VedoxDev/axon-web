@@ -92,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Vertical layout (original Discord-style)
   return (
-    <div className="w-20 bg-gray-900 flex flex-col items-center py-3 space-y-2 h-full">
+    <div className="w-20 bg-[#151718] flex flex-col items-center py-3 space-y-2">
       {/* Home/Dashboard */}
       <div className="relative group">
         <div 

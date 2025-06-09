@@ -65,7 +65,7 @@ const FilesView: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 text-white">
+    <div className="flex flex-col h-full bg-[#151718] text-white">
 
       {/* Search Bar */}
       <div className="mb-6">
@@ -73,7 +73,7 @@ const FilesView: React.FC = () => {
           <input
             type="text"
             placeholder="Buscar archivos..."
-            className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-700 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-[#2D2D2D] text-white placeholder-gray-400 border border-gray-700 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-orange-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

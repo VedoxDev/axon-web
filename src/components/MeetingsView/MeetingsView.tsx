@@ -14,6 +14,8 @@ interface MeetingSection {
   meetings: Meeting[];
 }
 
+
+
 const mockMeetingsData: MeetingSection[] = [
   {
     title: 'Próximas Reuniones',
@@ -66,6 +68,7 @@ const mockMeetingsData: MeetingSection[] = [
         date: '15 Dec',
         time: '15:00 AM',
         location: 'In-Person',
+        status: 'completed'
       },
     ],
   },
@@ -73,18 +76,18 @@ const mockMeetingsData: MeetingSection[] = [
 
 const MeetingsView: React.FC = () => {
   return (
-    <div className="flex flex-col h-130 bg-gray-900 text-white overflow-y-auto border border-orange-700">
+    <div className="flex flex-col h-full bg-[#151718] text-white overflow-y-auto ">
 
       {/* Meeting Sections (Scrollable) */}
-      <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+      <div className="flex-1 overflow-y-auto space-y-6 pr-2 ">
         {mockMeetingsData.map((section) => (
-          <div key={section.title} className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-lg">
+          <div key={section.title} className="bg-[#2D2D2D] border border-gray-700 rounded-lg p-4 shadow-lg ">
             <h3 className="text-lg font-semibold mb-4 text-white">{section.title}</h3>
             <div className="space-y-4">
               {section.meetings.map((meeting) => (
                 <div 
                   key={meeting.id} 
-                  className={`bg-gray-700 rounded-md p-3 flex items-center justify-between ${section.title === 'Reuniones Pasadas' ? 'opacity-60' : ''}`} // Apply opacity based on section title
+                  className={`bg-[#151718] rounded-md p-3 flex items-center justify-between ${section.title === 'Reuniones Pasadas' ? 'opacity-60' : ''}`} // Apply opacity based on section title
                 >
                   <div className="flex-1">
                     <div className="text-base font-medium text-blue-400">{meeting.title}</div>
@@ -92,7 +95,7 @@ const MeetingsView: React.FC = () => {
                     <div className="text-sm text-gray-400">{meeting.location}</div>
                   </div>
                   {meeting.status === 'completed' && (
-                    <span className="ml-4 px-2 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">Completed</span>
+                    <span className="ml-4 px-2 py-1 bg-orange-600 text-white text-xs font-semibold rounded-full">Completed</span>
                   )}
                 </div>
               ))}

@@ -8,6 +8,17 @@ interface Announcement {
   type: 'type1' | 'type2'; // To differentiate styling (border color)
 }
 
+const style = `
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+`;
+
 const mockAnnouncements: Announcement[] = [
   {
     id: 'ann1',
@@ -56,14 +67,14 @@ const mockAnnouncements: Announcement[] = [
 
 const AnnouncementsView: React.FC = () => {
   return (
-    <div className="flex flex-col h-135 bg-gray-900 text-white border border-orange-700">
+    <div className="flex flex-col h-150 bg-[#151718] text-white hide-scrollbar p-3">
 
     {/* Scrollable List Container */}
-    <div className="flex-1 min-h-0 overflow-y-auto pr-2 space-y-4">
+    <div className="flex-1 min-h-0 overflow-y-auto pr-2 space-y-4 hide-scrollbar">
       {mockAnnouncements.map((announcement) => (
         <div
           key={announcement.id}
-          className={`bg-gray-800 rounded-lg p-4 shadow-lg border-l-4 ${
+          className={`bg-[#2D2D2D] rounded-lg p-4 shadow-lg border-3 ${
             announcement.type === 'type1' ? 'border-orange-500' : 'border-blue-500'
           }`}
         >

@@ -49,7 +49,7 @@ const getFileIcon = (fileType: File['type']) => {
 
 const FileCard: React.FC<FileCardProps> = ({ file }) => {
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-lg flex flex-col items-start space-y-3">
+    <div className="bg-[#2D2D2D] border border-gray-700 rounded-lg p-4 shadow-lg flex flex-col items-start space-y-3">
       <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-700 flex-shrink-0">
         {getFileIcon(file.type)}
       </div>

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
+import ChatPanel from './ChatPanel';
 
 interface SidebarProps {
-  isOpen: boolean;
-  isPinned: boolean;
-  onToggle: () => void;
-  onPin: () => void;
   onMenuItemSelect?: (itemId: string) => void;
+  onChatSelect?: (chatId: string | null) => void;
+  selectedChatId: string | null;
 }
 
 interface SidebarSection {
@@ -28,11 +27,9 @@ interface Member {
 }
 
 const CollapsibleSidebar: React.FC<SidebarProps> = ({ 
-  isOpen, 
-  isPinned, 
-  onToggle, 
-  onPin, 
-  onMenuItemSelect 
+  onMenuItemSelect,
+  onChatSelect,
+  selectedChatId,
 }) => {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
@@ -42,6 +39,7 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
     color: 'from-indigo-500 to-purple-600'
   });
   const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [isGeneralChat, setIsGeneralChat] = useState(false);
 
   const members: Member[] = [
     { id: '1', name: 'Juan Pérez', avatar: 'JP', status: 'online' },
@@ -58,12 +56,11 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
 
   const handleItemClick = (itemId: string) => {
     setSelectedItem(itemId);
+    if (selectedProject.id === 'chat') {
+      setSelectedProject(projects[0]);
+    }
     if (onMenuItemSelect) {
       onMenuItemSelect(itemId);
-    }
-    // Close sidebar if not pinned
-    if (!isPinned) {
-      onToggle();
     }
   };
 
@@ -83,7 +80,7 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
       ),
     },
     {
-      id: "chat",
+      id: "general-chat",
       title: "Chat",
       sectionIcon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,14 +90,14 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
     },
     {
       id: "calendar",
-      title: "Calendario",
+      title: "Itinerario",
       sectionIcon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
     },
-    {
+    /*{
       id: "activity",
       title: "Actividad",
       sectionIcon: (
@@ -126,7 +123,7 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
       ),
-    },
+    },*/
     {
       id: "announcements",
       title: "Anuncios",
@@ -135,169 +132,190 @@ const CollapsibleSidebar: React.FC<SidebarProps> = ({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
         </svg>
       ),
-    }
+    },
+    
   ];
 
-  return (
-    <div className={`
-      bg-gray-800 border-r border-gray-700 flex flex-col transition-all duration-300 ease-in-out
-      ${isOpen ? 'w-75' : 'w-12'}
-      ${!isOpen ? 'overflow-hidden' : 'overflow-visible'}
-    `}>
-      {/* Sidebar Header */}
-      <div className={`flex flex-col border-b border-gray-700 flex-shrink-0 ${isOpen ? 'px-6' : 'px-3'}`}>
-        {/* Top Section: Logo, Title, and Actions */}
-        <div className="flex items-center justify-between py-4">
-          {/* Logo and Title Area */}
-          {isOpen && (
-            <div className="flex items-center space-x-3 min-w-0 flex-grow mr-4 relative">
-              <button
-                onClick={() => setIsProjectMenuOpen(!isProjectMenuOpen)}
-                className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity"
-              >
-                <span className="text-white font-bold text-sm">A</span>
-              </button>
-              <span className="text-white font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
-                {selectedProject.name}
-              </span>
-              
-              {/* Project Selection Dropdown */}
-              {isProjectMenuOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50">
-                  <div className="py-1">
-                    {projects.map((project) => (
-                      <button
-                        key={project.id}
-                        onClick={() => handleProjectSelect(project)}
-                        className={`w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center space-x-2 ${
-                          selectedProject.id === project.id ? 'bg-gray-700 text-white' : ''
-                        }`}
-                      >
-                        <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${project.color}`}></div>
-                        <span>{project.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+  // Discord-style project bar
+  const getProjectColor = (project: Project) => {
+    if (project.color) return project.color;
+    const colors = [
+      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-purple-500', 
+      'bg-pink-500', 'bg-yellow-500', 'bg-indigo-500', 'bg-orange-500'
+    ];
+    return colors[parseInt(project.id) % colors.length];
+  };
 
-          {/* Sidebar Actions (Pin/Close Buttons) */}
-          <div className={`flex items-center space-x-2 flex-shrink-0 ${isOpen ? 'pl-4' : 'w-full justify-center'}`}>
-            <button
-              onClick={onToggle}
-              className={`p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors ${!isOpen ? 'w-8 h-8 flex items-center justify-center' : ''}`}
-              title="Toggle sidebar"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            {isOpen && (
-              <>
-                <button
-                  onClick={onPin}
-                  className={`p-1.5 rounded transition-colors ${
-                    isPinned
-                      ? 'text-white-400 hover:text-white bg-blue-400 '
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-                  title={isPinned ? 'Desanclar sidebar' : 'Anclar sidebar'}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                  </svg>
-                </button>
-              </>
-            )}
+  return (
+    <div className="flex h-full">
+      {/* Discord-style vertical project bar */}
+      <div className="w-16 bg-[#151718] flex flex-col items-center py-3 space-y-2">
+        {/* Chat Button */}
+        <div className="relative group">
+          <div 
+            className={`w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center cursor-pointer transition-all duration-200 hover:rounded-xl ${
+              selectedProject.id === 'chat' ? 'rounded-xl ring-4 ring-orange-500 ring-opacity-50' : ''
+            }`}
+            onClick={() => {
+              setSelectedProject({id: 'chat', name: 'Chat', color: 'from-blue-500 to-indigo-600'});
+              if (onMenuItemSelect) onMenuItemSelect('chat');
+            }}
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
+          {selectedProject.id === 'chat' && (
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-white rounded-r-full -ml-2" />
+          )}
+          {/* Tooltip */}
+          <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            Chat
           </div>
         </div>
 
-        {/* Bottom Section: Members */}
-        {isOpen && (
-          <div className="flex items-center justify-between pb-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-400">Miembros</span>
-              <div className="flex items-center space-x-0.5">
-                {members.slice(0, 4).map((member, idx) => (
-                  <div
-                    key={member.id}
-                    className="relative z-10"
-                    style={{ marginLeft: idx === 0 ? 0 : '-0.7rem' }}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium text-white border-2 border-gray-800 ${
-                        typeof member.avatar === 'string' && member.avatar.startsWith('http')
-                          ? ''
-                          : 'bg-gray-600'
-                      }`}
-                      style={{
-                        backgroundImage:
-                          typeof member.avatar === 'string' && member.avatar.startsWith('http')
-                            ? `url(${member.avatar})`
-                            : undefined,
-                        backgroundSize: 'cover',
-                      }}
-                    >
-                      {!(typeof member.avatar === 'string' && member.avatar.startsWith('http')) &&
-                        member.avatar}
-                    </div>
-                    <div
-                      className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-gray-800 ${
-                        member.status === 'online'
-                          ? 'bg-green-500'
-                          : member.status === 'away'
-                          ? 'bg-yellow-500'
-                          : 'bg-gray-500'
-                      }`}
-                    />
-                  </div>
-                ))}
-                {members.length > 4 && (
-                  <div
-                    className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-semibold text-white border-2 border-gray-800 z-0"
-                    style={{ marginLeft: '-0.7rem' }}
-                  >
-                    +{members.length - 4}
-                  </div>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => setIsMembersOpen(!isMembersOpen)}
-              className="text-gray-400 hover:text-white transition-colors"
+        {/* Project Icons */}
+        {projects.map((project) => (
+          <div key={project.id} className="relative group">
+            <div 
+              className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${project.color} flex items-center justify-center cursor-pointer transition-all duration-200 hover:rounded-xl overflow-hidden ${
+                selectedProject.id === project.id ? 'rounded-xl ring-4 ring-orange-500 ring-opacity-50' : ''
+              }`}
+              onClick={() => {
+                setSelectedProject(project);
+                if (onMenuItemSelect) onMenuItemSelect(project.id);
+              }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
+              <span className="text-white font-bold text-xl">
+                {project.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            {selectedProject.id === project.id && (
+              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-white rounded-r-full -ml-2" />
+            )}
+            {/* Tooltip */}
+            <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              {project.name}
+            </div>
           </div>
-        )}
+        ))}
+        {/* Add Project Button */}
+        <div className="relative group">
+          <div 
+            className="w-12 h-12 rounded-2xl bg-gray-700 hover:bg-orange-600 flex items-center justify-center cursor-pointer transition-all duration-200 hover:rounded-xl"
+            onClick={() => setIsProjectMenuOpen(true)}
+          >
+            <svg className="w-6 h-6 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          {/* Tooltip */}
+          <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            Agregar Proyecto
+          </div>
+        </div>
       </div>
 
-      {/* Navigation - Scrollable */}
-      {isOpen && (
-        <div className="flex-1 overflow-y-auto overflow-x-hidden py-5 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-          {/* Menu Sections */}
-          {menuSections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => handleItemClick(section.id)}
-              className={`flex items-center w-full px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors group ${
-                selectedItem === section.id ? 'bg-gray-700 text-white' : ''
-              }`}
-            >
-              <div className="flex items-center space-x-3 min-w-0">
-                <div className="text-gray-400 group-hover:text-gray-300 flex-shrink-0">
-                  {section.sectionIcon}
+      {/* Main sidebar content */}
+      <div className="bg-[#151718] h-full border border-gray-700 flex flex-col w-72 lg:w-80 min-w-0 relative flex-1" style={{height: '100vh'}}>
+        {selectedProject.id === 'chat' ? (
+          <ChatPanel 
+            activeChannel={selectedChatId || null}
+            isSidebarView={true}
+            onChatSelect={onChatSelect}
+          />
+        ) : (
+          <>
+            {/* Sidebar Header */}
+            <div className="flex flex-col border-b border-gray-700 flex-shrink-0 px-6">
+              {/* Top Section: Logo and Title */}
+              <div className="flex items-center justify-between py-4">
+                {/* Logo and Title Area */}
+                <div className="flex items-center space-x-3 min-w-0 flex-grow mr-4 relative">
+                  <span className={`w-8 h-8 bg-gradient-to-br ${selectedProject.color} rounded-lg flex items-center justify-center flex-shrink-0 transition-opacity text-white font-bold text-sm`}>{selectedProject.name.charAt(0).toUpperCase()}</span>
+                  <span className="text-white font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-lg">
+                    {selectedProject.name}
+                  </span>
                 </div>
-                <span className="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{section.title}</span>
               </div>
-            </button>
-          ))}
-        </div>
-      )}
+
+              {/* Bottom Section: Members */}
+              <div className="flex items-center justify-between pb-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-400">Miembros</span>
+                  <div className="flex items-center space-x-0.5">
+                    {members.slice(0, 4).map((member, idx) => (
+                      <div
+                        key={member.id}
+                        className="relative z-10"
+                        style={{ marginLeft: idx === 0 ? 0 : '-0.7rem' }}
+                      >
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium text-white ${
+                            typeof member.avatar === 'string' && member.avatar.startsWith('http')
+                              ? ''
+                              : 'bg-gray-600'
+                          }`}
+                          style={{
+                            backgroundImage:
+                              typeof member.avatar === 'string' && member.avatar.startsWith('http')
+                                ? `url(${member.avatar})`
+                                : undefined,
+                            backgroundSize: 'cover',
+                          }}
+                        >
+                          {!(typeof member.avatar === 'string' && member.avatar.startsWith('http')) &&
+                            member.avatar}
+                        </div>
+                        <div
+                          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-gray-800 ${
+                            member.status === 'online'
+                              ? 'bg-green-500'
+                              : member.status === 'away'
+                              ? 'bg-yellow-500'
+                              : 'bg-gray-500'
+                          }`}
+                        />
+                      </div>
+                    ))}
+                    {members.length > 4 && (
+                      <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm -ml-3 cursor-pointer relative z-0">
+                        +{members.length - 4}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMembersOpen(!isMembersOpen)}
+                  className="p-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
+              {menuSections.map((section) => (
+                <div
+                  key={section.id}
+                  className={`flex items-center px-6 py-3 cursor-pointer transition-colors ${
+                    selectedItem === section.id
+                      ? 'bg-gray-700 text-white'
+                      : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  }`}
+                  onClick={() => handleItemClick(section.id)}
+                >
+                  {section.sectionIcon}
+                  <span className="ml-3 text-sm font-medium">{section.title}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

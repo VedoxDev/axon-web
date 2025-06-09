@@ -21,16 +21,80 @@ interface Event {
   title: string;
   type: 'type1' | 'type2'; // To differentiate styling (left border color and dot color)
   date: Date;
+  brand?: string; // Adding brand information
 }
 
 const mockEvents: Event[] = [
-  { id: '1', title: 'Reunión de equipo', type: 'type1', date: new Date(2024, 5, 10) }, // June 10th, 2024
-  { id: '2', title: 'Presentación de proyecto', type: 'type2', date: new Date(2024, 5, 10) }, // June 10th, 2024
-  { id: '3', title: 'Almuerzo con cliente', type: 'type1', date: new Date(2024, 5, 13) }, // June 13th, 2024
-  { id: '4', title: 'Planificación semanal', type: 'type2', date: new Date(2024, 5, 13) }, // June 13th, 2024
-  { id: '5', title: 'Revisión de código', type: 'type1', date: new Date(2024, 6, 5) }, // July 5th, 2024
-  { id: '6', title: 'Demo Features', type: 'type2', date: new Date(2024, 6, 15) }, // July 15th, 2024
-  { id: '7', title: 'Meeting with Stakeholders', type: 'type1', date: new Date(2024, 4, 28) }, // May 28th, 2024
+  { 
+    id: '1', 
+    title: 'Nike - Presentación de nueva colección', 
+    type: 'type1', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 10),
+    brand: 'Nike'
+  },
+  { 
+    id: '2', 
+    title: 'Adidas - Reunión de estrategia Q3', 
+    type: 'type2', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 10),
+    brand: 'Adidas'
+  },
+  { 
+    id: '3', 
+    title: 'Apple - Revisión de campaña publicitaria', 
+    type: 'type1', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 13),
+    brand: 'Apple'
+  },
+  { 
+    id: '4', 
+    title: 'Samsung - Planificación de lanzamiento', 
+    type: 'type2', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 13),
+    brand: 'Samsung'
+  },
+  { 
+    id: '5', 
+    title: 'Microsoft - Demo de nuevas features', 
+    type: 'type1', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 15),
+    brand: 'Microsoft'
+  },
+  { 
+    id: '6', 
+    title: 'Google - Reunión de análisis de mercado', 
+    type: 'type2', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 15),
+    brand: 'Google'
+  },
+  { 
+    id: '7', 
+    title: 'Amazon - Presentación de resultados Q2', 
+    type: 'type1', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 20),
+    brand: 'Amazon'
+  },
+  { 
+    id: '8', 
+    title: 'Tesla - Reunión de innovación', 
+    type: 'type2', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 20),
+    brand: 'Tesla'
+  },
+  { 
+    id: '9', 
+    title: 'Meta - Estrategia de redes sociales', 
+    type: 'type1', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 25),
+    brand: 'Meta'
+  },
+  { 
+    id: '10', 
+    title: 'Spotify - Planificación de contenido', 
+    type: 'type2', 
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 25),
+    brand: 'Spotify'
+  }
 ];
 
 const CalendarView: React.FC = () => {
@@ -75,7 +139,7 @@ const CalendarView: React.FC = () => {
       return (
         <div
           key={index}
-          className={`aspect-square bg-gray-800 rounded-md border border-gray-700 p-1 flex flex-col ${
+          className={`aspect-square bg-[#282828] rounded-md border border-gray-700 p-1 flex flex-col ${
             !isCurrentMonth ? 'opacity-40' : ''
           } ${isCurrentDay ? 'ring-2 ring-blue-500' : ''}`}
         >
@@ -93,11 +157,11 @@ const CalendarView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-gray-900 text-white overflow-y-auto">
+    <div className="flex flex-col h-full bg-[#151718] text-white overflow-y-auto">
       {/* Main content area: Calendar and Events side-by-side */}
-      <div className="flex flex-1 overflow-hidden space-x-6">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden lg:space-x-6 p-4 lg:p-6">
         {/* Calendar Section */}
-        <div className="flex flex-col w-1/2 flex-shrink-0 overflow-y-auto pr-3">
+        <div className="flex flex-col w-full lg:w-1/2 flex-shrink-0 overflow-y-auto lg:pr-3 mb-6 lg:mb-0">
           {/* Month Navigation */}
           <div className="flex items-center justify-between mb-4">
             <button
@@ -113,7 +177,7 @@ const CalendarView: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-lg font-semibold">
+            <span className="text-base lg:text-lg font-semibold">
               {format(currentDate, 'MMMM yyyy', { locale: es })}
             </span>
             <button
@@ -145,17 +209,17 @@ const CalendarView: React.FC = () => {
         </div>
 
         {/* Eventos Section */}
-        <div className="flex flex-col w-140 flex-shrink-0 bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-lg h-full">
-          <h3 className="text-lg font-semibold mb-4 text-white flex-shrink-0">Eventos</h3>
+        <div className="flex flex-col w-full lg:w-1/2 flex-shrink-0 bg-[#282828] border border-gray-700 rounded-lg p-4 shadow-lg h-[550px]">
+          <h3 className="text-lg font-semibold mb-4 text-white">Eventos</h3>
 
           {/* Event Search and Filter */}
-          <div className="mb-4 space-y-3 flex-shrink-0">
+          <div className="mb-4 space-y-3">
             <input
               type="text"
               placeholder="Buscar Evento"
-              className="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-[#282828] text-white placeholder-gray-400 border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
-            <select className="w-full bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select className="w-full bg-[#2D2D2D] text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option>Todos los Eventos</option>
               <option>Reuniones</option>
               <option>Presentaciones</option>
@@ -164,21 +228,27 @@ const CalendarView: React.FC = () => {
           </div>
 
           {/* Event List (Scrollable) */}
-          <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
             <div className="text-sm font-medium text-white mb-2">Lista</div>
             {mockEvents
               .filter(event => isSameMonth(event.date, currentDate))
               .map(event => (
                 <div
                   key={event.id}
-                  className={`bg-gray-700 rounded-md p-3 border-l-4 ${
+                  className={`bg-[#121212] rounded-md p-3 border-l-4 hover:bg-gray-600 transition-colors duration-200 ${
                     event.type === 'type1' ? 'border-orange-500' : 'border-blue-500'
                   }`}
                 >
-                  <div className="font-medium">{event.title}</div>
-                  <div className="text-sm text-gray-400">
+                  <div className="font-medium text-white">{event.title}</div>
+                  <div className="text-sm text-gray-300">
                     {format(event.date, 'd MMMM, yyyy', { locale: es })}
                   </div>
+                  {event.brand && (
+                    <div className="text-xs text-gray-400 mt-1 flex items-center">
+                      <span className="mr-1">🏢</span>
+                      {event.brand}
+                    </div>
+                  )}
                 </div>
               ))}
           </div>
