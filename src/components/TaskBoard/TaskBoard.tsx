@@ -118,21 +118,23 @@ const TaskBoard: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-158 overflow-x-auto styled-scrollbar p-3 " >
-      <div className="flex space-x-6 min-w-[900px] pb-4" >
-        {columnOrder.map(col => (
-          <TaskColumn
-            key={col}
-            columnId={col}
-            title={columnTitles[col]}
-            tasks={tasks[col]}
-            onDragStart={handleDragStart}
-            onDrop={handleDrop}
-            isDragOver={draggedTask && draggedTask.from !== col}
-            onAddTask={handleAddTask}
-            onUpdateTask={handleUpdateTask}
-          />
-        ))}
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-x-auto styled-scrollbar p-3">
+        <div className="flex space-x-6 min-w-[900px] h-full pb-4">
+          {columnOrder.map(col => (
+            <TaskColumn
+              key={col}
+              columnId={col}
+              title={columnTitles[col]}
+              tasks={tasks[col]}
+              onDragStart={handleDragStart}
+              onDrop={handleDrop}
+              isDragOver={draggedTask && draggedTask.from !== col}
+              onAddTask={handleAddTask}
+              onUpdateTask={handleUpdateTask}
+            />
+          ))}
+        </div>
       </div>
       {/* Inject styles */}
       <style>{scrollbarStyle}</style>

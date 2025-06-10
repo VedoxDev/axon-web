@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface Message {
   id: string;
@@ -73,6 +73,15 @@ const mockMessages: Message[] = [
 const GeneralChat: React.FC = () => {
   const [messageInput, setMessageInput] = useState('');
   const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (messageInput.trim()) {
@@ -114,8 +123,8 @@ const GeneralChat: React.FC = () => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide flex flex-col-reverse">
-        {messages.slice().reverse().map((message) => (
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide min-h-0">
+        {messages.map((message) => (
           <div key={message.id} className="flex items-start space-x-3">
             <img 
               src={message.user.avatar} 
@@ -133,6 +142,7 @@ const GeneralChat: React.FC = () => {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}

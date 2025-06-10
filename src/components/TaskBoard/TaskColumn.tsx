@@ -64,14 +64,14 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 
   return (
     <div
-      className={`flex flex-col ${colors.bg} rounded-xl shadow-lg ${colors.border}  hide-scrollbar min-w-[18rem] h-145 transition-colors ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}
+      className={`flex flex-col ${colors.bg} rounded-xl shadow-lg ${colors.border} hide-scrollbar min-w-[18rem] h-full transition-colors ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}
       onDragOver={e => { e.preventDefault(); }}
       onDrop={() => onDrop(columnId)}
     >
-      <div className="px-4 py-3 flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center justify-between flex-shrink-0">
         <span className="text-lg font-semibold text-white">{title}</span>
       </div>
-      <div className="flex-1 overflow-y-auto p-3 space-y-4 hide-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3 space-y-4 hide-scrollbar min-h-0">
         {tasks.map(task => (
           <TaskCard
             key={task.id}
@@ -82,7 +82,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
         ))}
       </div>
       <button
-        className="m-3 mt-auto py-2 px-3 bg-gray-700 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors shadow flex items-center justify-center"
+        className="m-3 mt-0 py-2 px-3 bg-gray-700 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors shadow flex items-center justify-center flex-shrink-0"
         onClick={() => onAddTask(columnId)}
       >
         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

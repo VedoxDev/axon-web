@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSidebar, useNavigation } from '../contexts/LayoutContext';
 import TaskBoard from './TaskBoard/TaskBoard';
 import ActivityView from './ActivityView/ActivityView';
 import MeetingsView from './MeetingsView/MeetingsView';
@@ -6,14 +7,8 @@ import AnnouncementsView from './AnnouncementsView/AnnouncementsView';
 import FilesView from './FilesView/FilesView';
 import CalendarView from './CalendarView/CalendarView';
 import MembersPanel from './MembersPanel';
-import ChatPanel from './ChatPanel';
+import ChatConversationView from './ChatConversationView';
 import GeneralChat from './GeneralChat/GeneralChat';
-
-interface MainContentProps {
-  selectedItem?: string | null;
-  activeView: 'home' | 'friends' | 'conversations';
-  selectedChatId: string | null;
-}
 
 interface Member {
   id: string;
@@ -48,32 +43,42 @@ const members: Member[] = [
   { id: '9', name: 'Extra 5', avatar: 'E5', role: 'member', roleTitle: 'Designer', status: 'online' },
 ];
 
-const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView, selectedChatId }) => {
+const MainContent: React.FC = () => {
+  const { selectedItem } = useSidebar();
+  const { activeView, selectedChatId } = useNavigation();
   const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
 
   // Render the appropriate view based on selectedItem
   const renderSelectedView = () => {
     if (selectedItem === 'chat') {
-      // If selectedItem is 'chat', we show the full conversation only if a chat is selected
-      if (selectedChatId) {
-        return <ChatPanel activeChannel={selectedChatId} isSidebarView={false} />;
-      } else {
-        return null; // Or a placeholder if no specific chat is selected in main view
-      }
+      // If selectedItem is 'chat', we show the chat conversation interface
+      return <ChatConversationView selectedChatId={selectedChatId} />;
     }
 
     switch (selectedItem) {
       case 'home':
         return (
-          <div className="h-full flex flex-col items-center justify-center p-6 ">
-            <div className="max-w-2xl w-full bg-[#151718] border border-gray-700 rounded-2xl p-8 flex flex-col items-center shadow-lg">
-              <svg className="w-12 h-12 text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <h2 className="text-2xl font-bold text-white mb-2">Bienvenido al Dashboard de Axon</h2>
-              <p className="text-gray-400 mb-4 text-center">Selecciona un proyecto o una función del menú lateral para comenzar.</p>
-              {/* You can add more dashboard content here */}
-              <div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400">(Contenido de la vista principal)</div>
+          <div className="flex flex-col items-center justify-center h-full w-full overflow-y-auto">
+            <div className=" flex flex-row space-x-10 w-full max-w-5xl">
+              {/* Tarjeta 1 */}
+              <div className="flex-1 bg-[#151718] border border-gray-700 rounded-2xl p-8 flex flex-col items-center shadow-lg">
+                <svg className="w-12 h-12 text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <h2 className="text-2xl font-bold text-white mb-2">¡Comienza un nuevo proyecto!</h2>
+                <p className="text-gray-400 mb-4 text-center">Crea un proyecto para organizar tus tareas, equipos y objetivos.</p>
+                <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors text-lg">Nuevo Proyecto</button>
+              </div>
+
+              {/* Tarjeta 2 */}
+              <div className="flex-1 bg-[#151718] border border-gray-700 rounded-2xl p-8 flex flex-col items-center shadow-lg">
+                <svg className="w-12 h-12 text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <h2 className="text-2xl font-bold text-white mb-2">¡Comienza a chatear con amigos!</h2>
+                <p className="text-gray-400 mb-4 text-center">Conéctate y conversa con tus amigos en tiempo real.</p>
+                <button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors text-lg">Chatear Ahora</button>
+              </div>
             </div>
           </div>
         );
@@ -95,7 +100,7 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView, sel
         // Home, Friends, or Conversations view
         if (activeView === 'home') {
           return (
-            <div className="flex flex-col items-center justify-center h-full w-full">
+            <div className="flex flex-col items-center justify-center h-full w-full overflow-y-auto">
               <div className=" flex flex-row space-x-10 w-full max-w-5xl">
                 {/* Tarjeta 1 */}
                 <div className="flex-1 bg-[#151718] border border-gray-700 rounded-2xl p-8 flex flex-col items-center shadow-lg">
@@ -121,7 +126,7 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView, sel
           );
         } else if (activeView === 'friends') {
           return (
-            <div className="h-full p-2 sm:p-3 md:p-4 ">
+            <div className="h-full p-2 sm:p-3 md:p-4 overflow-y-auto">
               <div className="h-full w-full">
                 <div className="max-w-4xl mx-auto">
                   <div className="bg-[#151718] border border-gray-700 rounded-lg p-4 sm:p-6">
@@ -180,7 +185,7 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView, sel
         } else {
           // Conversations view
           return (
-            <div className="h-full p-2 sm:p-3 md:p-4 ">
+            <div className="h-full p-2 sm:p-3 md:p-4 overflow-y-auto">
               <div className="h-full w-full">
                 <div className="max-w-4xl mx-auto">
                   <div className="bg-[#151718] border border-gray-700 rounded-lg p-4 sm:p-6">
@@ -240,7 +245,12 @@ const MainContent: React.FC<MainContentProps> = ({ selectedItem, activeView, sel
     }
   };
 
-  return <div className="flex-1 flex flex-col h-full overflow-y-auto w-full hide-scrollbar">{renderSelectedView()}</div>;
+  return (
+    <div className="flex-1 flex flex-col min-h-0 w-full">
+      <style>{style}</style>
+      {renderSelectedView()}
+    </div>
+  );
 };
 
 export default MainContent; 

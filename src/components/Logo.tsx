@@ -4,14 +4,25 @@ import LogoImage from '../assets/images/Logo_Login.png';
 
 interface LogoProps {
   className?: string;
+  clickable?: boolean;
 }
 
-function Logo({ className = "" }: LogoProps) {
+function Logo({ className = "", clickable = true }: LogoProps) {
   const navigate = useNavigate();
 
   const handleClick = () => {
     navigate('/dashboard');
   };
+
+  if (!clickable) {
+    return (
+      <img 
+        src={LogoImage} 
+        alt="Axon logo" 
+        className={className}
+      />
+    );
+  }
 
   return (
     <button

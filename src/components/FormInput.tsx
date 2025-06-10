@@ -24,7 +24,8 @@ function FormInput({
         id={id}
         placeholder={placeholder}
         required={required}
-        className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm"
+        className="w-full p-2 rounded border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm"
+        style={{ backgroundColor: '#3A3A3A' }}
       />
     </div>
   );
