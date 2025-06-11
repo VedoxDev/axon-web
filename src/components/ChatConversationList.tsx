@@ -18,6 +18,7 @@ const ChatConversationList: React.FC<ChatConversationListProps> = ({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
   
   // Suppress unused variable warning
   void isConnected;
@@ -160,6 +161,18 @@ const ChatConversationList: React.FC<ChatConversationListProps> = ({
     }
   };
 
+  const handleReloadConversations = async () => {
+    try {
+      setIsReloading(true);
+      await loadConversations();
+    } catch (error: any) {
+      console.error('Failed to reload conversations:', error);
+      showError(error.message || 'Error al recargar conversaciones', 'Error');
+    } finally {
+      setIsReloading(false);
+    }
+  };
+
   const handleConversationSelect = (conversation: Conversation) => {
     const chatId = conversation.type === 'direct' 
       ? conversation.partner?.id 
@@ -224,6 +237,26 @@ const ChatConversationList: React.FC<ChatConversationListProps> = ({
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">Mensajes</h2>
+          <button
+            onClick={handleReloadConversations}
+            disabled={isReloading}
+            className="p-2 text-gray-400 hover:text-white hover:bg-[#282828] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Recargar conversaciones"
+          >
+            <svg 
+              className={`w-5 h-5 ${isReloading ? 'animate-spin' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+              />
+            </svg>
+          </button>
         </div>
 
         {/* Search */}
