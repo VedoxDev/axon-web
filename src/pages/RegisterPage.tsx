@@ -13,7 +13,7 @@ interface PasswordRequirement {
   met: boolean;
 }
 
-const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+const PasswordStrengthIndicator = ({ password, isVisible }: { password: string; isVisible: boolean }) => {
   const requirements: PasswordRequirement[] = [
     {
       label: 'Al menos 8 caracteres',
@@ -66,7 +66,7 @@ const PasswordStrengthIndicator = ({ password }: { password: string }) => {
     return 'Excelente';
   };
 
-  if (!password) return null;
+  if (!password || !isVisible) return null;
 
   return (
     <div className="absolute left-0 right-0 top-full mt-2 p-4 rounded-xl border border-gray-600 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200" 
@@ -124,6 +124,7 @@ function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [formData, setFormData] = useState<RegisterData & { confirmPassword: string }>({
     email: '',
     nombre: '',
@@ -286,6 +287,8 @@ function RegisterPage() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
+                  onFocus={() => setIsPasswordFocused(true)}
+                  onBlur={() => setIsPasswordFocused(false)}
                   className={`w-full px-4 py-3 pr-12 rounded-xl border text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 text-sm ${
                     errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-600 focus:ring-orange-500'
                   }`}
@@ -316,7 +319,7 @@ function RegisterPage() {
               )}
               
               {/* Password Strength Indicator - Floating */}
-              <PasswordStrengthIndicator password={formData.password} />
+              <PasswordStrengthIndicator password={formData.password} isVisible={isPasswordFocused} />
             </div>
 
             {/* Confirm Password Field */}

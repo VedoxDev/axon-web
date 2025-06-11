@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import { PrivateRoute, PublicRoute } from './components/ProtectedRoute';
 import { AlertProvider } from './hooks/useAlert';
@@ -48,6 +50,22 @@ function App() {
             element={
               <PublicRoute>
                 <RegisterPage />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/forgot-password" 
+            element={
+              <PublicRoute>
+                <ForgotPasswordPage />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/reset-password" 
+            element={
+              <PublicRoute>
+                <ResetPasswordPage />
               </PublicRoute>
             } 
           />

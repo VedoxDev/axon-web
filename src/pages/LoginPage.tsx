@@ -139,7 +139,7 @@ function LoginPage() {
             </div>
 
             <div className="text-right mb-6">
-              <a href="#" className="text-orange-400 hover:text-orange-300 text-sm transition-colors duration-200">¿Has olvidado tu contraseña?</a>
+              <Link to="/forgot-password" className="text-orange-400 hover:text-orange-300 text-sm transition-colors duration-200">¿Has olvidado tu contraseña?</Link>
             </div>
 
             {/* Login Button - Modern Design */}
