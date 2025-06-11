@@ -128,7 +128,12 @@ class ChatService {
         return;
       }
 
-      this.socket = io('/chat', {
+      // Determine the correct socket.io URL based on environment
+      const socketUrl = API_BASE_URL.startsWith('/') 
+        ? '/chat' // Development: use relative path (proxy will handle it)
+        : `${API_BASE_URL}/chat`; // Production: use full backend URL
+      
+      this.socket = io(socketUrl, {
         auth: {
           token: this.token
         }
