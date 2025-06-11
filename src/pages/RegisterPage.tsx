@@ -125,6 +125,7 @@ function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [formData, setFormData] = useState<RegisterData & { confirmPassword: string }>({
     email: '',
     nombre: '',
@@ -156,6 +157,11 @@ function RegisterPage() {
     const passwordMatchErrors = validationRules.passwordMatch(formData.password, formData.confirmPassword);
     if (passwordMatchErrors.length > 0) {
       validationErrors.confirmPassword = passwordMatchErrors;
+    }
+
+    // Check terms and conditions acceptance
+    if (!agreedToTerms) {
+      validationErrors.terms = ['Debes aceptar los Términos y Condiciones y la Política de Privacidad'];
     }
     
     if (Object.keys(validationErrors).length > 0) {
@@ -359,6 +365,66 @@ function RegisterPage() {
               </div>
               {errors.confirmPassword && (
                 <p className="mt-1 text-sm text-red-400">{errors.confirmPassword.join(', ')}</p>
+              )}
+            </div>
+
+            {/* Terms and Conditions Checkbox */}
+            <div className="mb-6">
+              <div className="flex items-start gap-3">
+                <div className="flex items-center h-5 relative">
+                  <input
+                    id="terms"
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => {
+                      setAgreedToTerms(e.target.checked);
+                      // Clear error when user checks the box
+                      if (e.target.checked && errors.terms) {
+                        setErrors(prev => ({ ...prev, terms: [] }));
+                      }
+                    }}
+                    className={`w-4 h-4 rounded border-2 focus:ring-2 focus:ring-orange-500 focus:ring-offset-0 transition-all duration-200 appearance-none cursor-pointer ${
+                      errors.terms 
+                        ? 'border-red-500' 
+                        : agreedToTerms 
+                          ? 'border-orange-500 bg-orange-500' 
+                          : 'border-gray-500 bg-transparent hover:border-orange-400'
+                    }`}
+                    disabled={isLoading}
+                    required
+                  />
+                  {/* Custom checkmark */}
+                  {agreedToTerms && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <label htmlFor="terms" className="text-sm text-gray-300 leading-5 cursor-pointer">
+                  Acepto los{' '}
+                  <a 
+                    href="https://axon-landing.vercel.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-orange-400 hover:text-orange-300 font-medium transition-colors duration-200 underline decoration-orange-400/30 hover:decoration-orange-300/50"
+                  >
+                    Términos y Condiciones
+                  </a>
+                  {' '}y la{' '}
+                  <a 
+                    href="https://axon-landing.vercel.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-orange-400 hover:text-orange-300 font-medium transition-colors duration-200 underline decoration-orange-400/30 hover:decoration-orange-300/50"
+                  >
+                    Política de Privacidad
+                  </a>
+                </label>
+              </div>
+              {errors.terms && (
+                <p className="mt-2 text-sm text-red-400">{errors.terms.join(', ')}</p>
               )}
             </div>
 
