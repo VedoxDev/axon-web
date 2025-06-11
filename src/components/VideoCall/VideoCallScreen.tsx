@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { LiveKitRoom, VideoConference, RoomAudioRenderer } from '@livekit/components-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { LiveKitRoom, VideoConference, RoomAudioRenderer, useRoomContext } from '@livekit/components-react';
 import '@livekit/components-styles';
 import './livekit-spanish.css';
 import { useAlert } from '../../hooks/useAlert';
@@ -10,6 +10,49 @@ interface VideoCallScreenProps {
   callId: string;
   onClose: () => void;
 }
+
+// Component to handle delayed permission granting
+const DelayedPermissionHandler: React.FC<{
+  isVideoEnabled: boolean;
+  isAudioEnabled: boolean;
+}> = ({ isVideoEnabled, isAudioEnabled }) => {
+  const room = useRoomContext();
+  const retryAttempted = useRef(false);
+
+  useEffect(() => {
+    if (!room || retryAttempted.current) return;
+
+    // Check if we have permissions but tracks aren't published
+    const checkAndRetryTracks = async () => {
+      try {
+        const localParticipant = room.localParticipant;
+        
+        // Check video track
+        if (isVideoEnabled && !localParticipant.isCameraEnabled) {
+          console.log('🎥 Attempting to retry video track after permission delay...');
+          await localParticipant.setCameraEnabled(true);
+        }
+        
+        // Check audio track  
+        if (isAudioEnabled && !localParticipant.isMicrophoneEnabled) {
+          console.log('🎤 Attempting to retry audio track after permission delay...');
+          await localParticipant.setMicrophoneEnabled(true);
+        }
+        
+        retryAttempted.current = true;
+      } catch (error) {
+        console.log('Retry track enabling failed:', error);
+      }
+    };
+
+    // Wait a bit then check if tracks need to be retried
+    const timer = setTimeout(checkAndRetryTracks, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [room, isVideoEnabled, isAudioEnabled]);
+
+  return null;
+};
 
 const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ callId, onClose }) => {
   const { showError, showSuccess } = useAlert();
@@ -230,9 +273,47 @@ const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ callId, onClose }) =>
             }}
             onDisconnected={handleDisconnect}
             onError={handleError}
+            onMediaDeviceFailure={(failure, kind) => {
+              console.warn(`Media device failure: ${failure} for ${kind}`);
+              // Retry enabling video/audio after a short delay when permissions are granted
+              setTimeout(() => {
+                if (kind === 'videoinput' && isVideoEnabled && !call.audioOnly) {
+                  console.log('Retrying video capture after permission delay...');
+                }
+                if (kind === 'audioinput' && isAudioEnabled) {
+                  console.log('Retrying audio capture after permission delay...');
+                }
+              }, 1000);
+            }}
+                         connectOptions={{
+               // Don't fail immediately if media permissions are delayed
+               maxRetries: 3,
+             }}
             options={{
               adaptiveStream: true,
               dynacast: true,
+              // Handle delayed permission granting and track republishing
+              publishDefaults: {
+                dtx: true,
+                red: false,
+                simulcast: true,
+              },
+              // Better video capture defaults
+              videoCaptureDefaults: {
+                resolution: {
+                  width: 1280,
+                  height: 720,
+                  frameRate: 30,
+                },
+              },
+              // Better audio capture defaults  
+              audioCaptureDefaults: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+              },
+              // Disconnect on page unload
+              disconnectOnPageLeave: true,
             }}
           >
             {/* Video Conference UI with Spanish styling */}
@@ -240,6 +321,9 @@ const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ callId, onClose }) =>
             
             {/* Audio Renderer - handles audio tracks automatically */}
             <RoomAudioRenderer />
+            
+            {/* Handle delayed permission granting */}
+            <DelayedPermissionHandler isVideoEnabled={isVideoEnabled && !call.audioOnly} isAudioEnabled={isAudioEnabled} />
           </LiveKitRoom>
         </div>
 
