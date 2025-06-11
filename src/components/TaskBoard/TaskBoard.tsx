@@ -36,7 +36,7 @@ const initialTasks: Record<TaskColumnType, Task[]> = {
     { id: '4', title: 'Implementar feature X', description: 'Desarrollar la funcionalidad X según las especificaciones.', priority: 'critical', labels: ['Backend', 'Frontend'], assignedTo: [{ id: 'user1', name: 'Victor Alejandro' }, { id: 'user2', name: 'Ranzes Azahel' }], dueDate: '2025-06-25', section: 'inProgress', createdBy: 'System', creationDate: '2025-06-10, 11:00:00 AM', lastUpdated: '2025-06-11, 04:00:00 PM' },
   ],
   completed: [
-    { id: '5', title: 'Diseño de base de datos', description: 'Completar el diseño de la base de datos y esquemas.', priority: 'moderate', labels: ['Backend'], assignedTo: [{ id: 'user2', name: 'Ranzes Azahel' }], dueDate: '2025-06-05', section: 'completed', createdBy: 'System', creationDate: '2025-06-01, 09:00:00 AM', lastUpdated: '2025-06-05, 05:00:00 PM' },
+    { id: '5', title: 'Diseño de base de datos', description: 'Completar el diseño de la base de datos y esquemas.', priority: 'moderate', labels: ['Backend'], assignedTo: [{ id: 'user2', name: 'Ranzes Azahel' }], dueDate: '2025-06-05', section: 'completed', createdBy: 'System', creationDate: '2025-06-01, 09:00:00 AM', lastUpdated: '2025-06-05, 05:00:00 PM', indicatorColor: '#4CAF50' },
   ],
   integration: [
     { id: '6', title: 'Pruebas de integración', description: 'Realizar pruebas de integración entre módulos.', priority: 'critical', labels: ['QA', 'Backend'], assignedTo: [{ id: 'user3', name: 'John Doe' }], dueDate: '2025-06-30', section: 'integration', createdBy: 'System', creationDate: '2025-06-12, 09:00:00 AM', lastUpdated: '2025-06-13, 01:00:00 PM' },
@@ -94,6 +94,7 @@ const TaskBoard: React.FC = () => {
         createdBy: 'Current User', // Placeholder
         creationDate: now.toLocaleString(),
         lastUpdated: now.toLocaleString(),
+        indicatorColor: '#FFB74D', // Default color for new tasks
       };
 
       setTasks(prev => ({

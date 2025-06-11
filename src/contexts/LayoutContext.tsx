@@ -68,7 +68,7 @@ const initialState: LayoutState = {
     selectedChatId: null,
   },
   titlebar: {
-    title: 'Axon',
+    title: '',
     showBackButton: false,
     isElectron: false, // Will be set to true in Electron environment
   },
@@ -96,7 +96,7 @@ const layoutReducer = (state: LayoutState, action: LayoutAction): LayoutState =>
 
     case 'SET_SELECTED_MENU_ITEM':
       // Auto-set titlebar title based on menu item
-      let title = 'Axon';
+      let title = '';
       if (action.payload) {
         switch (action.payload) {
           case 'tasks': title = 'Tasks'; break;

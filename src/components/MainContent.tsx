@@ -246,9 +246,12 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 w-full">
+    <div className="flex-1 flex flex-col min-h-0 w-full relative">
       <style>{style}</style>
       {renderSelectedView()}
+      {isMembersPanelOpen && (
+        <MembersPanel isOpen={isMembersPanelOpen} onClose={() => setIsMembersPanelOpen(false)} members={members} />
+      )}
     </div>
   );
 };
