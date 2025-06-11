@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTitlebar, useSidebar, useNavigation } from '../../contexts/LayoutContext';
+import { useTitlebar, useSidebar, useNavigation, useLayout } from '../../contexts/LayoutContext';
 import { useAlert } from '../../hooks/useAlert';
 import authService from '../../services/authService';
 import { projectService } from '../../services/projectService';
 import type { CurrentUser, SearchUser } from '../../services/projectService';
 import Logo from '../Logo';
 import UserProfileModal from '../modals/UserProfileModal';
+import PasswordChangeModal from '../modals/PasswordChangeModal';
+import ActivityModal from '../modals/ActivityModal';
+import PersonalTasksModal from '../modals/PersonalTasksModal';
 
 interface TitlebarProps {
   className?: string;
@@ -15,12 +18,15 @@ interface TitlebarProps {
 const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
   const { title, showBackButton, isElectron } = useTitlebar();
   const { toggle: toggleSidebar, selectItem } = useSidebar();
-  const { selectChat } = useNavigation();
+  const { actions } = useLayout();
   const navigate = useNavigate();
   const { showSuccess } = useAlert();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isPasswordChangeModalOpen, setIsPasswordChangeModalOpen] = useState(false);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,9 +135,8 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
     setSearchResults([]);
     setShowSearchResults(false);
     
-    // Navigate to chat and select the user
-    selectItem('chat');
-    selectChat(user.id);
+    // Switch to chat and select the user - this handles everything in one action
+    actions.switchToChat(user.id);
   };
 
   // Close search results when clicking outside
@@ -185,36 +190,36 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
 
       {/* Right Section - Actions and Controls */}
       <div className="titlebar-right">
-        {/* Home Button */}
-        <button 
-          className="titlebar-interactive titlebar-button"
-          onClick={() => selectItem(null)}
-          aria-label="Home"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-        </button>
-
         {/* Notifications */}
         <button 
           className="titlebar-interactive titlebar-button notification-button"
+          onClick={() => setIsActivityModalOpen(true)}
           aria-label="Notifications"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <div className="notification-badge" />
         </button>
 
-        {/* Settings */}
+        {/* Calendar */}
         <button 
           className="titlebar-interactive titlebar-button"
-          aria-label="Settings"
+          onClick={() => selectItem('calendar')}
+          aria-label="Calendar"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </button>
+
+        {/* Tasks */}
+        <button 
+          className="titlebar-interactive titlebar-button"
+          onClick={() => setIsTasksModalOpen(true)}
+          aria-label="Tasks"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
         </button>
 
@@ -334,24 +339,16 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
                   </button>
                   
                   <button
-                    onClick={() => setIsUserMenuOpen(false)}
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      setIsPasswordChangeModalOpen(true);
+                    }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors flex items-center"
                   >
                     <svg className="w-4 h-4 mr-3" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M 7 5 C 3.1545455 5 0 8.1545455 0 12 C 0 15.845455 3.1545455 19 7 19 C 9.7749912 19 12.089412 17.314701 13.271484 15 L 16 15 L 16 18 L 22 18 L 22 15 L 24 15 L 24 9 L 23 9 L 13.287109 9 C 12.172597 6.6755615 9.8391582 5 7 5 z M 7 7 C 9.2802469 7 11.092512 8.4210017 11.755859 10.328125 L 11.988281 11 L 22 11 L 22 13 L 20 13 L 20 16 L 18 16 L 18 13 L 12.017578 13 L 11.769531 13.634766 C 11.010114 15.575499 9.1641026 17 7 17 C 4.2454545 17 2 14.754545 2 12 C 2 9.2454545 4.2454545 7 7 7 z M 7 9 C 5.3549904 9 4 10.35499 4 12 C 4 13.64501 5.3549904 15 7 15 C 8.6450096 15 10 13.64501 10 12 C 10 10.35499 8.6450096 9 7 9 z M 7 11 C 7.5641294 11 8 11.435871 8 12 C 8 12.564129 7.5641294 13 7 13 C 6.4358706 13 6 12.564129 6 12 C 6 11.435871 6.4358706 11 7 11 z"></path>
                     </svg>
                     Cambiar contraseña
-                  </button>
-                  
-                  <button
-                    onClick={() => setIsUserMenuOpen(false)}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors flex items-center"
-                  >
-                    <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Configuración
                   </button>
                   
                   <div className="border-t border-gray-600 my-1"></div>
@@ -384,6 +381,24 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
       <UserProfileModal 
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={isPasswordChangeModalOpen}
+        onClose={() => setIsPasswordChangeModalOpen(false)}
+      />
+
+      {/* Activity Modal */}
+      <ActivityModal
+        isOpen={isActivityModalOpen}
+        onClose={() => setIsActivityModalOpen(false)}
+      />
+
+      {/* Personal Tasks Modal */}
+      <PersonalTasksModal
+        isOpen={isTasksModalOpen}
+        onClose={() => setIsTasksModalOpen(false)}
       />
 
       <style>{`

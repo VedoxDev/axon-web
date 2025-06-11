@@ -3,7 +3,7 @@ import { useSidebar, useNavigation } from '../contexts/LayoutContext';
 import TaskBoard from './TaskBoard/TaskBoard';
 import ActivityView from './ActivityView/ActivityView';
 import MeetingsView from './MeetingsView/MeetingsView';
-import AnnouncementsView from './AnnouncementsView/AnnouncementsView';
+import ProjectAnnouncements from './ProjectAnnouncements';
 import FilesView from './FilesView/FilesView';
 import CalendarView from './CalendarView/CalendarView';
 import MembersPanel from './MembersPanel';
@@ -44,7 +44,7 @@ const members: Member[] = [
 ];
 
 const MainContent: React.FC = () => {
-  const { selectedItem } = useSidebar();
+  const { selectedItem, currentProjectId } = useSidebar();
   const { activeView, selectedChatId } = useNavigation();
   const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
 
@@ -55,6 +55,31 @@ const MainContent: React.FC = () => {
       return <ChatConversationView selectedChatId={selectedChatId} />;
     }
 
+    // If we have a current project selected, handle project-specific views
+    if (currentProjectId) {
+      switch (selectedItem) {
+        case 'tasks':
+          return <TaskBoard projectId={currentProjectId} />;
+        case 'calendar':
+          return <CalendarView />;
+        case 'activity':
+          return <ActivityView />;
+        case 'files':
+          return <FilesView />;
+        case 'meetings':
+          return <MeetingsView />;
+        case 'announcements':
+          return <ProjectAnnouncements projectId={currentProjectId} projectName="Proyecto Actual" />;
+        case 'general-chat':
+          // Show project's group chat
+          return <ChatConversationView selectedChatId={selectedChatId} />;
+        default:
+          // Default to project chat when project is selected
+          return <ChatConversationView selectedChatId={selectedChatId} />;
+      }
+    }
+
+    // No project selected - show global views
     switch (selectedItem) {
       case 'home':
         return (
@@ -83,7 +108,8 @@ const MainContent: React.FC = () => {
           </div>
         );
       case 'tasks':
-        return <TaskBoard />;
+        // No project selected, show empty state
+        return <TaskBoard projectId={undefined} />;
       case 'calendar':
         return <CalendarView />;
       case 'activity':
@@ -93,7 +119,7 @@ const MainContent: React.FC = () => {
       case 'meetings':
         return <MeetingsView />;
       case 'announcements':
-        return <AnnouncementsView />;
+        return <ProjectAnnouncements projectId={undefined} projectName="Anuncios" />;
       case 'general-chat':
         return <GeneralChat />;
       default:
@@ -227,11 +253,10 @@ const MainContent: React.FC = () => {
                               <h3 className="text-white font-medium">{member.name}</h3>
                               <p className="text-sm text-gray-400">{member.roleTitle}</p>
                             </div>
-                            <button className="text-blue-400 hover:text-blue-300 transition-colors">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                              </svg>
-                            </button>
+                            <div className="text-sm text-gray-400">
+                              <p className="text-xs">Última conexión</p>
+                              <p>Hace 2 horas</p>
+                            </div>
                           </div>
                         ))}
                       </div>

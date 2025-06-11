@@ -9,6 +9,7 @@ export interface LayoutState {
     selectedItem: string | null;
     width: number;
     collapsedWidth: number;
+    currentProjectId: string | null; // Track current project context
   };
   navigation: {
     activeView: 'home' | 'friends' | 'conversations';
@@ -31,12 +32,14 @@ export type LayoutAction =
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'SET_SIDEBAR_PINNED'; payload: boolean }
   | { type: 'SET_SELECTED_MENU_ITEM'; payload: string | null }
+  | { type: 'SET_CURRENT_PROJECT'; payload: string | null }
   | { type: 'SET_ACTIVE_VIEW'; payload: 'home' | 'friends' | 'conversations' }
   | { type: 'SET_SELECTED_CHAT'; payload: string | null }
   | { type: 'SET_TITLEBAR_TITLE'; payload: string }
   | { type: 'SET_TITLEBAR_BACK'; payload: boolean }
   | { type: 'SET_VIEWPORT'; payload: Partial<LayoutState['viewport']> }
-  | { type: 'RESET_NAVIGATION' };
+  | { type: 'RESET_NAVIGATION' }
+  | { type: 'SWITCH_TO_CHAT'; payload: string | null };
 
 // Context Type
 interface LayoutContextType {
@@ -45,12 +48,14 @@ interface LayoutContextType {
     toggleSidebar: () => void;
     setSidebarPinned: (pinned: boolean) => void;
     selectMenuItem: (item: string | null) => void;
+    setCurrentProject: (projectId: string | null) => void;
     setActiveView: (view: 'home' | 'friends' | 'conversations') => void;
     selectChat: (chatId: string | null) => void;
     setTitlebarTitle: (title: string) => void;
     setTitlebarBack: (show: boolean) => void;
     resetNavigation: () => void;
     updateViewport: (viewport: Partial<LayoutState['viewport']>) => void;
+    switchToChat: (chatId: string | null) => void;
   };
 }
 
@@ -62,6 +67,7 @@ const initialState: LayoutState = {
     selectedItem: null,
     width: 320, // 20rem in pixels - increased for better space
     collapsedWidth: 64, // 4rem in pixels
+    currentProjectId: null,
   },
   navigation: {
     activeView: 'home',
@@ -117,6 +123,12 @@ const layoutReducer = (state: LayoutState, action: LayoutAction): LayoutState =>
         titlebar: { ...state.titlebar, title },
       };
 
+    case 'SET_CURRENT_PROJECT':
+      return {
+        ...state,
+        sidebar: { ...state.sidebar, currentProjectId: action.payload },
+      };
+
     case 'SET_ACTIVE_VIEW':
       return {
         ...state,
@@ -150,9 +162,17 @@ const layoutReducer = (state: LayoutState, action: LayoutAction): LayoutState =>
     case 'RESET_NAVIGATION':
       return {
         ...state,
-        sidebar: { ...state.sidebar, selectedItem: null },
+        sidebar: { ...state.sidebar, selectedItem: null, currentProjectId: null },
         navigation: { activeView: 'home', selectedChatId: null },
         titlebar: { ...state.titlebar, title: 'Axon', showBackButton: false },
+      };
+
+    case 'SWITCH_TO_CHAT':
+      return {
+        ...state,
+        sidebar: { ...state.sidebar, selectedItem: 'chat', currentProjectId: null },
+        navigation: { ...state.navigation, selectedChatId: action.payload },
+        titlebar: { ...state.titlebar, title: 'Chat' },
       };
 
     default:
@@ -172,12 +192,14 @@ export const LayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     toggleSidebar: () => dispatch({ type: 'TOGGLE_SIDEBAR' }),
     setSidebarPinned: (pinned: boolean) => dispatch({ type: 'SET_SIDEBAR_PINNED', payload: pinned }),
     selectMenuItem: (item: string | null) => dispatch({ type: 'SET_SELECTED_MENU_ITEM', payload: item }),
+    setCurrentProject: (projectId: string | null) => dispatch({ type: 'SET_CURRENT_PROJECT', payload: projectId }),
     setActiveView: (view: 'home' | 'friends' | 'conversations') => dispatch({ type: 'SET_ACTIVE_VIEW', payload: view }),
     selectChat: (chatId: string | null) => dispatch({ type: 'SET_SELECTED_CHAT', payload: chatId }),
     setTitlebarTitle: (title: string) => dispatch({ type: 'SET_TITLEBAR_TITLE', payload: title }),
     setTitlebarBack: (show: boolean) => dispatch({ type: 'SET_TITLEBAR_BACK', payload: show }),
     resetNavigation: () => dispatch({ type: 'RESET_NAVIGATION' }),
     updateViewport: (viewport: Partial<LayoutState['viewport']>) => dispatch({ type: 'SET_VIEWPORT', payload: viewport }),
+    switchToChat: (chatId: string | null) => dispatch({ type: 'SWITCH_TO_CHAT', payload: chatId }),
   }), [dispatch]);
 
   const contextValue = useMemo(() => ({ state, actions }), [state, actions]);
@@ -206,7 +228,8 @@ export const useSidebar = () => {
     toggle: actions.toggleSidebar,
     setPinned: actions.setSidebarPinned,
     selectItem: actions.selectMenuItem,
-  }), [state.sidebar, actions.toggleSidebar, actions.setSidebarPinned, actions.selectMenuItem]);
+    setCurrentProject: actions.setCurrentProject,
+  }), [state.sidebar, actions.toggleSidebar, actions.setSidebarPinned, actions.selectMenuItem, actions.setCurrentProject]);
 };
 
 export const useNavigation = () => {

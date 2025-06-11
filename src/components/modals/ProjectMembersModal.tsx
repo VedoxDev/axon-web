@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAlert } from '../../hooks/useAlert';
+import { useLayout } from '../../contexts/LayoutContext';
 import projectService, { type ProjectMember } from '../../services/projectService';
 
 interface ProjectMembersModalProps {
@@ -26,6 +27,7 @@ const ProjectMembersModal: React.FC<ProjectMembersModalProps> = ({
   onMemberRoleChanged
 }) => {
   const { showSuccess, showError } = useAlert();
+  const { actions } = useLayout();
   const [changingRoles, setChangingRoles] = useState<Set<string>>(new Set());
   if (!isOpen) return null;
 
@@ -125,6 +127,12 @@ const ProjectMembersModal: React.FC<ProjectMembersModalProps> = ({
     }
   };
 
+  const handleStartChat = (memberId: string) => {
+    // Close the modal and switch to chat with the selected member
+    onClose();
+    actions.switchToChat(memberId);
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
       <div className="rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-hidden backdrop-blur-sm flex flex-col" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
@@ -178,8 +186,21 @@ const ProjectMembersModal: React.FC<ProjectMembersModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Role Change Button & Status */}
-                  <div className="flex items-center space-x-3 flex-shrink-0">
+                  {/* Actions & Status */}
+                  <div className="flex items-center space-x-2 flex-shrink-0">
+                    {/* Chat Button - Show for all members except current user */}
+                    {member.id !== currentUserId && (
+                      <button
+                        onClick={() => handleStartChat(member.id)}
+                        className="p-2 rounded-lg border border-gray-500 hover:border-green-400 text-gray-300 hover:text-green-400 transition-colors"
+                        title={`Chatear con ${member.nombre} ${member.apellidos}`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                      </button>
+                    )}
+
                     {/* Role Change Button - Only for owners, not for self, not for other owners */}
                     {userRole === 'owner' && 
                      member.role !== 'owner' && 

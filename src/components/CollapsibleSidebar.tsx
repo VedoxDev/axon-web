@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useSidebar, useNavigation } from '../contexts/LayoutContext';
 import { useAlert } from '../hooks/useAlert';
 import projectService, { type Project, type ProjectDetails } from '../services/projectService';
+import announcementService, { type Announcement } from '../services/announcementService';
 import ChatConversationList from './ChatConversationList';
 import CreateProjectModal from './CreateProjectModal';
 import ProjectMembersModal from './modals/ProjectMembersModal';
@@ -29,7 +30,7 @@ interface UIProject {
 }
 
 const CollapsibleSidebar: React.FC = () => {
-  const { selectedItem, selectItem } = useSidebar();
+  const { selectedItem, selectItem, setCurrentProject, currentProjectId } = useSidebar();
   const { selectedChatId, selectChat } = useNavigation();
   const { showError } = useAlert();
   
@@ -48,6 +49,8 @@ const CollapsibleSidebar: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  const [latestAnnouncement, setLatestAnnouncement] = useState<Announcement | null>(null);
+  const [isLoadingAnnouncement, setIsLoadingAnnouncement] = useState(false);
 
   // Load user's projects and current user on component mount
   useEffect(() => {
@@ -76,6 +79,18 @@ const CollapsibleSidebar: React.FC = () => {
       loadProjectDetails(selectedProject.id);
     }
   }, [selectedProject.id]);
+
+  // Sync selectedProject with global selectedItem state
+  useEffect(() => {
+    if (selectedItem === 'chat' && selectedProject.id !== 'chat') {
+      // Global state switched to chat, update local state
+      setSelectedProject({
+        id: 'chat',
+        name: 'Mensajes',
+        color: 'from-blue-500 to-indigo-600'
+      });
+    }
+  }, [selectedItem, selectedProject.id]);
 
   const loadProjects = async () => {
     try {
@@ -107,11 +122,31 @@ const CollapsibleSidebar: React.FC = () => {
       setIsLoadingDetails(true);
       const details = await projectService.getProjectDetails(projectId);
       setProjectDetails(details);
+      
+      // Also load latest announcement
+      loadLatestAnnouncement(projectId);
     } catch (error: any) {
       showError(error.message, 'Error al cargar detalles del proyecto');
       setProjectDetails(null);
     } finally {
       setIsLoadingDetails(false);
+    }
+  };
+
+  const loadLatestAnnouncement = async (projectId: string) => {
+    try {
+      setIsLoadingAnnouncement(true);
+      const announcements = await announcementService.getProjectAnnouncements(projectId);
+      
+      // Get the most recent announcement (announcements should be ordered by date)
+      const latest = announcements.length > 0 ? announcements[0] : null;
+      setLatestAnnouncement(latest);
+    } catch (error: any) {
+      // Don't show error for announcements since it's not critical
+      console.error('Error loading latest announcement:', error);
+      setLatestAnnouncement(null);
+    } finally {
+      setIsLoadingAnnouncement(false);
     }
   };
 
@@ -128,19 +163,29 @@ const CollapsibleSidebar: React.FC = () => {
   }, [projectDetails]);
 
   const handleItemClick = useCallback((itemId: string) => {
-    if (selectedProject.id === 'chat') {
-      if (projects.length > 0) {
-        setSelectedProject(projects[0]);
-      }
-    }
+    // Don't change the selected project, just navigate within it
     selectItem(itemId);
-  }, [selectedProject.id, projects, selectItem]);
+  }, [selectItem]);
 
   const handleProjectSelect = useCallback((project: UIProject) => {
     setSelectedProject(project);
     setIsProjectMenuOpen(false);
-    selectItem(project.id);
-  }, [selectItem]);
+    
+    if (project.id === 'chat') {
+      // Going back to global chat
+      setCurrentProject(null);
+      selectItem('chat');
+      // Clear project-specific data
+      setLatestAnnouncement(null);
+      setProjectDetails(null);
+    } else {
+      // Selecting a project - set project context and default to project chat
+      setCurrentProject(project.id);
+      selectItem('general-chat'); // Default to project chat when selecting a project
+      // Set the project's group chat as selected
+      selectChat(project.id); // Use project ID as the group chat ID
+    }
+  }, [setCurrentProject, selectItem, selectChat]);
 
   const handleChatSelect = useCallback((chatId: string | null) => {
     selectChat(chatId);
@@ -448,16 +493,71 @@ const CollapsibleSidebar: React.FC = () => {
 
             {/* Latest Announcement Box */}
             <div className="px-4 py-3">
-              <div className="rounded-xl p-4" style={{ backgroundColor: '#282828' }}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                  </svg>
-                  <span className="text-xs font-medium text-gray-300 uppercase tracking-wide">Último Anuncio</span>
+              <div 
+                className="rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-md border-l-4" 
+                style={{ 
+                  backgroundColor: '#282828',
+                  borderLeftColor: latestAnnouncement 
+                    ? latestAnnouncement.type === 'urgent' 
+                      ? '#EF4444' 
+                      : latestAnnouncement.type === 'warning'
+                        ? '#F59E0B'
+                        : latestAnnouncement.type === 'success'
+                          ? '#10B981'
+                          : '#3B82F6'
+                    : '#6B7280'
+                }}
+                onClick={() => {
+                  if (latestAnnouncement) {
+                    handleItemClick('announcements');
+                  }
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                    <span className="text-xs font-medium text-gray-300 uppercase tracking-wide">Último Anuncio</span>
+                  </div>
+                  {latestAnnouncement && !latestAnnouncement.isRead && (
+                    <div className="w-2 h-2 bg-orange-400 rounded-full" title="No leído" />
+                  )}
                 </div>
-                <div className="text-sm text-gray-500">
-                  No hay anuncios recientes
-                </div>
+                
+                {isLoadingAnnouncement ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full"></div>
+                    <span className="text-sm text-gray-400">Cargando...</span>
+                  </div>
+                ) : latestAnnouncement ? (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm">{announcementService.getAnnouncementTypeIcon(latestAnnouncement.type)}</span>
+                      <h4 className="text-sm font-medium text-white line-clamp-1">
+                        {latestAnnouncement.title}
+                      </h4>
+                      {latestAnnouncement.pinned && (
+                        <span className="text-orange-400 text-xs">📌</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 line-clamp-2 mb-2">
+                      {latestAnnouncement.content}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {latestAnnouncement.createdBy.fullName}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {announcementService.formatDate(latestAnnouncement.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500">
+                    No hay anuncios recientes
+                  </div>
+                )}
               </div>
             </div>
 
@@ -551,6 +651,21 @@ const CollapsibleSidebar: React.FC = () => {
           }
         }}
       />
+
+      <style>{`
+        .line-clamp-1 {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   );
 };
