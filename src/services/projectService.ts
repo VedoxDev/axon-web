@@ -406,6 +406,24 @@ class ProjectService {
       throw new Error(error.message || 'Error al obtener perfil de usuario');
     }
   }
+
+  // Get any user's profile by ID
+  async getUserProfileById(userId: string): Promise<UserProfile> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/profile`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(formatError(error.message));
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      throw new Error(error.message || 'Error al obtener perfil de usuario');
+    }
+  }
 }
 
 // Export singleton instance

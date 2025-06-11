@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTitlebar, useSidebar } from '../../contexts/LayoutContext';
+import { useTitlebar, useSidebar, useNavigation } from '../../contexts/LayoutContext';
 import { useAlert } from '../../hooks/useAlert';
 import authService from '../../services/authService';
 import { projectService } from '../../services/projectService';
-import type { CurrentUser } from '../../services/projectService';
+import type { CurrentUser, SearchUser } from '../../services/projectService';
 import Logo from '../Logo';
 import UserProfileModal from '../modals/UserProfileModal';
 
@@ -15,11 +15,20 @@ interface TitlebarProps {
 const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
   const { title, showBackButton, isElectron } = useTitlebar();
   const { toggle: toggleSidebar, selectItem } = useSidebar();
+  const { selectChat } = useNavigation();
   const navigate = useNavigate();
   const { showSuccess } = useAlert();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchTimeoutRef = useRef<number | null>(null);
 
   // Fetch current user data
   useEffect(() => {
@@ -33,6 +42,15 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
     };
     
     fetchCurrentUser();
+  }, []);
+
+  // Cleanup search timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, []);
   
   // Extract initials from name
@@ -62,6 +80,68 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
     showSuccess('Sesión cerrada correctamente', 'Hasta pronto');
     navigate('/', { replace: true });
     setIsUserMenuOpen(false);
+  };
+
+  // Search users with debounce
+  const searchUsers = async (query: string) => {
+    if (query.length < 2) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await projectService.searchUsers(query, 8);
+      // Filter out current user from results
+      const filteredResults = response.users.filter(user => user.id !== currentUser?.id);
+      setSearchResults(filteredResults);
+      setShowSearchResults(true);
+    } catch (error: any) {
+      console.error('Error searching users:', error);
+      setSearchResults([]);
+      setShowSearchResults(false);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Handle search input with debounce
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout
+    searchTimeoutRef.current = window.setTimeout(() => {
+      searchUsers(query);
+    }, 300);
+  };
+
+  // Handle user selection to start chat
+  const handleUserSelect = (user: SearchUser) => {
+    // Clear search
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSearchResults(false);
+    
+    // Navigate to chat and select the user
+    selectItem('chat');
+    selectChat(user.id);
+  };
+
+  // Close search results when clicking outside
+  const handleClickOutside = () => {
+    setShowSearchResults(false);
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = (user: SearchUser): string => {
+    return `${user.nombre.charAt(0)}${user.apellidos.charAt(0)}`.toUpperCase();
   };
 
   return (
@@ -141,15 +221,67 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
         {/* Search */}
         <div className="titlebar-interactive search-container hidden lg:flex">
           <input
+            ref={searchInputRef}
             type="text"
-            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Buscar usuarios para chatear..."
             className="titlebar-search"
           />
           <div className="search-icon">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            {isSearching ? (
+              <div className="animate-spin w-4 h-4 border border-gray-400 border-t-transparent rounded-full"></div>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
           </div>
+
+          {/* Floating Search Results */}
+          {showSearchResults && (
+            <>
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={handleClickOutside}
+              />
+              
+              {/* Results Dropdown */}
+              <div className="absolute top-full left-0 right-0 mt-2 border border-gray-600 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                {searchResults.length === 0 && !isSearching ? (
+                  <div className="p-4 text-center text-gray-400">
+                    <div className="text-2xl mb-2">🔍</div>
+                    <div className="text-sm">No se encontraron usuarios</div>
+                  </div>
+                ) : (
+                  <div className="py-2">
+                    {searchResults.map((user) => (
+                      <div 
+                        key={user.id}
+                        onClick={() => handleUserSelect(user)}
+                        className="flex items-center px-4 py-3 hover:bg-gray-700 cursor-pointer transition-colors"
+                      >
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold mr-3"
+                          style={{ backgroundColor: '#007AFF20', color: '#007AFF' }}
+                        >
+                          {getUserInitials(user)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-medium truncate">{user.fullName}</div>
+                          <div className="text-gray-400 text-sm truncate">{user.email}</div>
+                        </div>
+                        <div className="text-xs text-gray-500 ml-2">
+                          💬 Chat
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* User Menu */}
@@ -355,7 +487,7 @@ const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
 
         .search-container {
           position: relative;
-          min-width: 200px;
+          min-width: 280px;
         }
 
         .titlebar-search {

@@ -5,9 +5,10 @@ import { useAlert } from '../../hooks/useAlert';
 interface UserProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userId?: string; // Optional - if provided, shows that user's profile, otherwise current user
 }
 
-const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
+const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose, userId }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'activity' | 'projects'>('overview');
@@ -17,12 +18,14 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
     if (isOpen) {
       fetchProfile();
     }
-  }, [isOpen]);
+  }, [isOpen, userId]);
 
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const profileData = await projectService.getUserProfile();
+      const profileData = userId 
+        ? await projectService.getUserProfileById(userId)
+        : await projectService.getUserProfile();
       setProfile(profileData);
     } catch (error: any) {
       showError('Error al cargar perfil', error.message);
@@ -111,7 +114,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
+    <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
       <div className="rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden backdrop-blur-sm" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
         {/* Header */}
         <div className="p-6 text-white" style={{ backgroundColor: '#282828' }}>

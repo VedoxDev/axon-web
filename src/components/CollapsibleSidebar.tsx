@@ -387,7 +387,7 @@ const CollapsibleSidebar: React.FC = () => {
                         <span className="text-xs text-gray-500">Sin miembros</span>
                       ) : (
                         <div className="flex items-center space-x-0.5">
-                          {members.slice(0, 3).map((member, idx) => (
+                          {members.slice(0, 2).map((member, idx) => (
                             <div
                               key={member.id}
                               className="relative z-10 group/member"
@@ -408,15 +408,15 @@ const CollapsibleSidebar: React.FC = () => {
                               </div>
                             </div>
                           ))}
-                          {members.length > 3 && (
+                          {members.length > 2 && (
                             <div 
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium -ml-3 relative z-0 border border-gray-600"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium -ml-3 relative z-20 border border-gray-600"
                               style={{
                                 backgroundColor: '#007AFF',
                                 color: 'white'
                               }}
                             >
-                              {members.length - 3}+
+                              {members.length - 2}+
                             </div>
                           )}
                         </div>
