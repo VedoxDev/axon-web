@@ -12,10 +12,19 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
   const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false); // For entrance animation
 
   useEffect(() => {
     setEditedTask(task);
     setIsEditing(false); // Reset edit mode when task changes
+
+    // Trigger entrance animation
+    if (task) {
+      const timer = setTimeout(() => setIsVisible(true), 10); // Small delay to allow mount
+      return () => clearTimeout(timer);
+    } else {
+      setIsVisible(false); // Reset when task is null (unmounting or just closed)
+    }
   }, [task]);
 
   if (!task) {
@@ -91,7 +100,10 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={onClose}>
+    <div
+      className={`absolute inset-0 bg-black z-50 flex justify-center items-center transition-opacity duration-300 ease-out ${isVisible ? 'bg-opacity-50' : 'bg-opacity-0'}`}
+      onClick={onClose}
+    >
       <style>
         {`
           .modal-scrollbar::-webkit-scrollbar {
@@ -115,60 +127,68 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
         `}
       </style>
       <div
-        className="bg-[#2D2D2D] rounded-lg shadow-xl w-full max-w-2xl text-white relative flex flex-col max-h-[90vh]"
+        className={`bg-[#2D2D2D] rounded-lg shadow-xl w-full max-w-2xl text-white relative flex flex-col max-h-[90vh] transition-all duration-300 ease-out transform ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-2 left-4 text-gray-400 hover:text-white text-4xl font-semibold">
-          &times;
-        </button>
-        <div className="absolute top-4 left-1/3  transform -translate-x-1/2 text-left">
-          {isEditing ? (
-            <input
-              type="text"
-              value={editedTask?.title || ''}
-              onChange={handleTitleChange}
-              onBlur={() => setIsTitleFocused(false)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  setIsTitleFocused(false);
-                }
-              }}
-              className="text-2xl left-1/3 font-bold bg-[#151718] text-white p-2 rounded w-full text-left focus:outline-none focus:ring-2 focus:ring-orange-500"
-              autoFocus
-            />
-          ) : (
-            <h2 className="text-3xl left-1/3 font-bold ">
-              {editedTask?.title}
-            </h2>
-          )}
-        </div>
-        <div className="absolute top-4 right-6">
-          {isEditing ? (
-            <div className="flex space-x-2">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-6 pt-4">
+          {/* Close Button */}
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-4xl font-semibold leading-none">
+            &times;
+          </button>
+
+          {/* Title */}
+          <div className="flex-grow text-center mx-4">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editedTask?.title || ''}
+                onChange={handleTitleChange}
+                onBlur={() => setIsTitleFocused(false)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsTitleFocused(false);
+                  }
+                }}
+                className="text-2xl font-bold bg-[#151718] text-white p-2 rounded w-full text-center focus:outline-none focus:ring-2 focus:ring-orange-500"
+                autoFocus
+              />
+            ) : (
+              <h2 className="text-3xl font-bold">
+                {editedTask?.title}
+              </h2>
+            )}
+          </div>
+
+          {/* Edit/Save/Cancel Buttons */}
+          <div>
+            {isEditing ? (
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleSave}
+                  className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium text-sm"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={handleSave}
-                className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium text-sm"
+                onClick={handleEditClick}
+                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium text-sm flex items-center"
               >
-                Save
+                ✏️ Editar
               </button>
-              <button
-                onClick={handleCancelEdit}
-                className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleEditClick}
-              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium text-sm flex items-center"
-            >
-              ✏️ Editar
-            </button>
-          )}
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto modal-scrollbar px-6 pb-2 pt-20">
+        <div className="flex-1 overflow-y-auto modal-scrollbar px-6 pb-2 pt-4">
           <div className="mb-4">
             <span className="text-sm font-semibold text-gray-400 block mb-1">Sección</span>
             {isEditing ? (
@@ -307,16 +327,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
             <p className="text-sm text-gray-300">Última actualización: <span className="font-medium">{editedTask?.lastUpdated}</span></p>
           </div>
         </div>
-        {isEditing && (
-          <div className="flex justify-end pt-4 px-6 pb-6">
-            <button
-              onClick={handleSave}
-              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium"
-            >
-              Guardar Cambios
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

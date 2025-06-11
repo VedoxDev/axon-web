@@ -10,6 +10,7 @@ export type Task = {
   createdBy: string;
   creationDate: string;
   lastUpdated: string;
+  indicatorColor?: string;
 };
 
 export type TaskColumnType = 'assigned' | 'inProgress' | 'completed' | 'integration' | 'review' ; 
