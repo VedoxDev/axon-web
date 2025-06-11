@@ -6,6 +6,120 @@ import { useAlert } from '../hooks/useAlert';
 import authService, { validationRules } from '../services/authService';
 import type { RegisterData } from '../services/authService';
 
+// Password strength checker component
+interface PasswordRequirement {
+  label: string;
+  test: (password: string) => boolean;
+  met: boolean;
+}
+
+const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+  const requirements: PasswordRequirement[] = [
+    {
+      label: 'Al menos 8 caracteres',
+      test: (pwd) => pwd.length >= 8,
+      met: password.length >= 8
+    },
+    {
+      label: 'Máximo 64 caracteres',
+      test: (pwd) => pwd.length <= 64,
+      met: password.length <= 64
+    },
+    {
+      label: 'Una letra mayúscula (A-Z)',
+      test: (pwd) => /[A-Z]/.test(pwd),
+      met: /[A-Z]/.test(password)
+    },
+    {
+      label: 'Un número (0-9)',
+      test: (pwd) => /\d/.test(pwd),
+      met: /\d/.test(password)
+    },
+    {
+      label: 'Un carácter especial (@$!%*?&.)',
+      test: (pwd) => /[@$!%*?&.]/.test(pwd),
+      met: /[@$!%*?&.]/.test(password)
+    },
+    {
+      label: 'Solo caracteres válidos (sin espacios)',
+      test: (pwd) => /^[A-Za-zñÑáéíóúÁÉÍÓÚ\d@$!%*?&.]*$/.test(pwd) && !/\s/.test(pwd),
+      met: /^[A-Za-zñÑáéíóúÁÉÍÓÚ\d@$!%*?&.]*$/.test(password) && !/\s/.test(password)
+    }
+  ];
+
+  const metRequirements = requirements.filter(req => req.met).length;
+  const totalRequirements = requirements.length;
+  
+  const getStrengthColor = () => {
+    const percentage = (metRequirements / totalRequirements) * 100;
+    if (percentage < 33) return '#ef4444'; // red
+    if (percentage < 66) return '#f59e0b'; // amber
+    if (percentage < 100) return '#3b82f6'; // blue
+    return '#10b981'; // green
+  };
+
+  const getStrengthText = () => {
+    const percentage = (metRequirements / totalRequirements) * 100;
+    if (percentage < 33) return 'Débil';
+    if (percentage < 66) return 'Regular';
+    if (percentage < 100) return 'Buena';
+    return 'Excelente';
+  };
+
+  if (!password) return null;
+
+  return (
+    <div className="absolute left-0 right-0 top-full mt-2 p-4 rounded-xl border border-gray-600 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200" 
+         style={{ backgroundColor: '#2A2A2A' }}>
+      {/* Strength indicator */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-gray-300">Seguridad de la contraseña:</span>
+        <span 
+          className="text-sm font-semibold"
+          style={{ color: getStrengthColor() }}
+        >
+          {getStrengthText()} ({metRequirements}/{totalRequirements})
+        </span>
+      </div>
+      
+      {/* Progress bar */}
+      <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+        <div 
+          className="h-2 rounded-full transition-all duration-300"
+          style={{ 
+            width: `${(metRequirements / totalRequirements) * 100}%`,
+            backgroundColor: getStrengthColor()
+          }}
+        />
+      </div>
+
+      {/* Requirements list */}
+      <div className="space-y-2">
+        {requirements.map((requirement, index) => (
+          <div key={index} className="flex items-center gap-3">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${
+              requirement.met 
+                ? 'bg-green-500' 
+                : 'bg-gray-600 border border-gray-500'
+            }`}>
+              {requirement.met && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span className={`text-xs transition-colors duration-200 ${
+              requirement.met ? 'text-green-400' : 'text-gray-400'
+            }`}>
+              {requirement.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -52,6 +166,7 @@ function RegisterPage() {
     setErrors({});
 
     try {
+      // Register the user
       await authService.register({
         email: formData.email,
         nombre: formData.nombre,
@@ -59,12 +174,22 @@ function RegisterPage() {
         password: formData.password
       });
       
+      // Automatically log in the user after successful registration
+      await authService.login({
+        email: formData.email,
+        password: formData.password
+      });
+      
       showSuccess(
-        'Cuenta creada exitosamente. Ahora puedes iniciar sesión.',
+        '¡Cuenta creada exitosamente! Bienvenido al dashboard.',
         '¡Registro completado!'
       );
-      navigate('/');
+      
+      // Redirect to dashboard instead of login
+      navigate('/dashboard');
     } catch (error: any) {
+      // If registration fails, show registration error
+      // If registration succeeds but login fails, show login error
       showError(error.message, 'Error de registro');
     } finally {
       setIsLoading(false);
@@ -152,7 +277,7 @@ function RegisterPage() {
             </div>
 
             {/* Password Field */}
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Contraseña</label>
               <div className="relative">
                 <input
@@ -176,7 +301,7 @@ function RegisterPage() {
                 >
                   {showPassword ? (
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 11-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.952-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 11-4.243-4.243m4.242 4.242L9.88 9.88" />
                     </svg>
                   ) : (
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -189,6 +314,9 @@ function RegisterPage() {
               {errors.password && (
                 <p className="mt-1 text-sm text-red-400">{errors.password.join(', ')}</p>
               )}
+              
+              {/* Password Strength Indicator - Floating */}
+              <PasswordStrengthIndicator password={formData.password} />
             </div>
 
             {/* Confirm Password Field */}

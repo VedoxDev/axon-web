@@ -1,0 +1,185 @@
+/* Spanish tooltips for LiveKit VideoCall buttons */
+
+/* Add Spanish tooltips on hover */
+.livekit-spanish [data-lk-button] {
+  position: relative;
+}
+
+/* Microphone buttons */
+.livekit-spanish [data-lk-button][aria-label*="Mute microphone"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="mute"]:hover::before {
+  content: "Silenciar micrófono";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.livekit-spanish [data-lk-button][aria-label*="Unmute microphone"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="unmute"]:hover::before {
+  content: "Activar micrófono";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Camera buttons */
+.livekit-spanish [data-lk-button][aria-label*="Disable camera"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="disable camera"]:hover::before {
+  content: "Desactivar cámara";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.livekit-spanish [data-lk-button][aria-label*="Enable camera"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="enable camera"]:hover::before {
+  content: "Activar cámara";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;  
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Screen share buttons */
+.livekit-spanish [data-lk-button][aria-label*="Share screen"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="share screen"]:hover::before {
+  content: "Compartir pantalla";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.livekit-spanish [data-lk-button][aria-label*="Stop screen share"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="stop screen share"]:hover::before {
+  content: "Detener compartir pantalla";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Settings button */
+.livekit-spanish [data-lk-button][aria-label*="Settings"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="settings"]:hover::before {
+  content: "Configuración";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Leave/Disconnect buttons */
+.livekit-spanish [data-lk-button][aria-label*="Leave"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="leave"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="Disconnect"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="disconnect"]:hover::before {
+  content: "Salir de la llamada";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Chat button */
+.livekit-spanish [data-lk-button][aria-label*="Chat"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="chat"]:hover::before {
+  content: "Chat";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Participants button */
+.livekit-spanish [data-lk-button][aria-label*="Participants"]:hover::before,
+.livekit-spanish [data-lk-button][aria-label*="participants"]:hover::before {
+  content: "Participantes";
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+} 

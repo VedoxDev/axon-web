@@ -298,6 +298,11 @@ class AuthService {
       this.token = result.access_token;
       localStorage.setItem('access_token', result.access_token);
       
+      // Emit login success event for other services to react
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('auth:loginSuccess'));
+      }, 0);
+      
       return result;
     } catch (error: any) {
       throw new Error(error.message || 'Error al iniciar sesión');

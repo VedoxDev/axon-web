@@ -265,6 +265,26 @@ class TaskService {
     }
   }
 
+  // Get personal tasks
+  async getPersonalTasks(): Promise<Task[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/tasks/personal`, {
+        method: 'GET',
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch personal tasks: ${response.statusText}`);
+      }
+
+      const apiTasks: APITask[] = await response.json();
+      return apiTasks.map(task => this.transformTask(task));
+    } catch (error) {
+      console.error('Error fetching personal tasks:', error);
+      throw error;
+    }
+  }
+
   // Get project tasks
   async getProjectTasks(projectId: string): Promise<Task[]> {
     try {

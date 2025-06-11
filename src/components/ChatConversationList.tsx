@@ -25,7 +25,19 @@ const ChatConversationList: React.FC<ChatConversationListProps> = ({
 
   useEffect(() => {
     initializeChat();
+
+    // Listen for login success to retry initialization
+    const handleLoginSuccess = () => {
+      console.log('Login success detected, retrying chat initialization');
+      setTimeout(() => {
+        initializeChat();
+      }, 100);
+    };
+
+    window.addEventListener('auth:loginSuccess', handleLoginSuccess);
+
     return () => {
+      window.removeEventListener('auth:loginSuccess', handleLoginSuccess);
       // Don't disconnect here since MainContent might need the connection
     };
   }, []);
@@ -38,6 +50,35 @@ const ChatConversationList: React.FC<ChatConversationListProps> = ({
       const user = await projectService.getCurrentUser();
       setCurrentUserId(user.id);
       chatService.setCurrentUserId(user.id);
+
+      // Refresh token from localStorage
+      chatService.refreshToken();
+
+      // Check if service is ready
+      if (!chatService.isReady()) {
+        console.warn('Chat service not ready - authentication token not available, will retry...');
+        
+        // Schedule a retry in 2 seconds (up to 5 attempts)
+        let retryCount = 0;
+        const maxRetries = 5;
+        const retryInterval = setInterval(() => {
+          retryCount++;
+          console.log(`Retry attempt ${retryCount}/${maxRetries} for chat initialization`);
+          
+          chatService.refreshToken();
+          if (chatService.isReady()) {
+            console.log('Token now available, proceeding with chat initialization');
+            clearInterval(retryInterval);
+            initializeChat(); // Retry full initialization
+          } else if (retryCount >= maxRetries) {
+            console.log('Max retries reached, giving up on chat initialization');
+            clearInterval(retryInterval);
+          }
+        }, 2000);
+        
+        setIsLoading(false);
+        return;
+      }
 
       // Connect if not already connected
       if (!chatService.connected) {

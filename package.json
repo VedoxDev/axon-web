@@ -10,9 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@livekit/components-react": "^2.9.9",
+    "@livekit/components-styles": "^1.1.6",
     "@tailwindcss/vite": "^4.1.8",
     "@types/react-router-dom": "^5.3.3",
     "date-fns": "^4.1.0",
+    "livekit-client": "^2.13.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.1",

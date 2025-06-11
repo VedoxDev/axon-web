@@ -61,7 +61,7 @@ const MainContent: React.FC = () => {
         case 'tasks':
           return <TaskBoard projectId={currentProjectId} />;
         case 'calendar':
-          return <CalendarView />;
+          return <CalendarView projectId={currentProjectId} />;
         case 'activity':
           return <ActivityView />;
         case 'files':

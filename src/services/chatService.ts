@@ -22,6 +22,8 @@ export interface ChatMessage {
   isEdited: boolean;
   createdAt: string;
   updatedAt: string;
+  // Call invitation properties (optional)
+  callId?: string;
 }
 
 export interface Conversation {
@@ -75,10 +77,37 @@ class ChatService {
 
   constructor() {
     this.loadToken();
+    this.setupTokenRefreshListener();
+  }
+
+  private setupTokenRefreshListener() {
+    // Listen for storage changes to refresh token when it's updated
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'access_token') {
+        console.log('Token updated in localStorage, refreshing chat service token');
+        this.refreshToken();
+      }
+    });
+
+    // Listen for custom login success events
+    window.addEventListener('auth:loginSuccess', () => {
+      console.log('Login success detected, refreshing chat service token');
+      this.refreshToken();
+    });
   }
 
   private loadToken() {
     this.token = localStorage.getItem('access_token');
+  }
+
+  // Public method to refresh the token (called after login)
+  refreshToken() {
+    this.loadToken();
+  }
+
+  // Check if service is ready to connect
+  isReady(): boolean {
+    return this.token !== null;
   }
 
   private getAuthHeaders() {
@@ -91,6 +120,9 @@ class ChatService {
   // Connect to WebSocket
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
+      // Try to refresh token before connecting
+      this.refreshToken();
+      
       if (!this.token) {
         reject(new Error('No authentication token available'));
         return;
@@ -427,7 +459,9 @@ class ChatService {
         isRead: rawMessage.isRead || false,
         isEdited: rawMessage.isEdited || false,
         createdAt: rawMessage.createdAt,
-        updatedAt: rawMessage.updatedAt || rawMessage.createdAt
+        updatedAt: rawMessage.updatedAt || rawMessage.createdAt,
+        // Include callId if present (for call invitations)
+        callId: rawMessage.callId
       };
     } catch (error) {
       console.error('Error transforming message:', error, rawMessage);
@@ -445,7 +479,8 @@ class ChatService {
         isRead: false,
         isEdited: false,
         createdAt: rawMessage.createdAt || new Date().toISOString(),
-        updatedAt: rawMessage.updatedAt || rawMessage.createdAt || new Date().toISOString()
+        updatedAt: rawMessage.updatedAt || rawMessage.createdAt || new Date().toISOString(),
+        callId: rawMessage.callId
       };
     }
   }

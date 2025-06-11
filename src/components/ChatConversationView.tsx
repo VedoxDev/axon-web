@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAlert } from '../hooks/useAlert';
 import chatService, { type ChatMessage, type Conversation } from '../services/chatService';
 import projectService from '../services/projectService';
+import callsService from '../services/callsService';
+import authService from '../services/authService';
+import { API_BASE_URL } from '../config/apiConfig';
 import UserProfileModal from './modals/UserProfileModal';
+import CallButtons from './CallButtons';
+
+import VideoCallScreen from './VideoCall/VideoCallScreen';
 
 // Custom scrollbar styles
 const scrollbarStyles = `
@@ -59,6 +65,9 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  const [activeCallId, setActiveCallId] = useState<string | null>(null);
+  const [callStatuses, setCallStatuses] = useState<Map<string, 'waiting' | 'active' | 'ended' | 'cancelled'>>(new Map());
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -69,6 +78,20 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
 
   useEffect(() => {
     initializeIfNeeded();
+
+    // Listen for login success to retry initialization
+    const handleLoginSuccess = () => {
+      console.log('Login success detected, retrying chat view initialization');
+      setTimeout(() => {
+        initializeIfNeeded();
+      }, 100);
+    };
+
+    window.addEventListener('auth:loginSuccess', handleLoginSuccess);
+
+    return () => {
+      window.removeEventListener('auth:loginSuccess', handleLoginSuccess);
+    };
   }, []);
 
   useEffect(() => {
@@ -89,6 +112,40 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
   useEffect(() => {
     scrollToBottom();
   }, [typingUsers]);
+
+  // Automatically check call statuses when messages load (mobile app approach)
+  useEffect(() => {
+    const checkCallStatusesAutomatically = async () => {
+      const callMessages = messages.filter(msg => 
+        msg.content.includes('📞') && 
+        msg.callId && 
+        !callStatuses.has(msg.callId)
+      );
+      
+      if (callMessages.length > 0) {
+        console.log('📞 Auto-checking status for', callMessages.length, 'call messages');
+        
+        // Sort by newest first so users see recent call statuses immediately
+        const sortedCallMessages = callMessages.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        // Check status for each call message automatically (newest first)
+        for (const message of sortedCallMessages) {
+          if (message.callId) {
+            console.log('🔍 Auto-checking call (newest first):', message.callId, 'from', message.createdAt);
+            await checkCallStatus(message.callId);
+            // Small delay between requests to be nice to the backend
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        }
+      }
+    };
+
+    if (messages.length > 0) {
+      checkCallStatusesAutomatically();
+    }
+  }, [messages]);
 
   // Close emoji picker when clicking outside
   useEffect(() => {
@@ -113,6 +170,43 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
       const user = await projectService.getCurrentUser();
       setCurrentUserId(user.id);
       chatService.setCurrentUserId(user.id);
+
+      // Refresh token from localStorage
+      chatService.refreshToken();
+
+      // Check if service is ready
+      if (!chatService.isReady()) {
+        console.warn('Chat service not ready - authentication token not available, will retry...');
+        
+        // Schedule a retry in 2 seconds (up to 5 attempts)
+        let retryCount = 0;
+        const maxRetries = 5;
+        const retryInterval = setInterval(() => {
+          retryCount++;
+          console.log(`Retry attempt ${retryCount}/${maxRetries} for chat view initialization`);
+          
+          chatService.refreshToken();
+          if (chatService.isReady()) {
+            console.log('Token now available, proceeding with chat view initialization');
+            clearInterval(retryInterval);
+            initializeIfNeeded(); // Retry full initialization
+          } else if (retryCount >= maxRetries) {
+            console.log('Max retries reached, giving up on chat view initialization');
+            clearInterval(retryInterval);
+          }
+        }, 2000);
+        
+        return;
+      }
+
+      // Request notification permissions for call invitations
+      if ('Notification' in window && Notification.permission === 'default') {
+        try {
+          await Notification.requestPermission();
+        } catch (error) {
+          console.log('Notification permission denied or not supported');
+        }
+      }
 
       // Connect if not already connected
       if (!chatService.connected) {
@@ -139,12 +233,44 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
 
     // New messages
     chatService.onMessage((message) => {
+      console.log('📨 New message received:', message);
+      
       setMessages(prev => {
         // Avoid duplicates
         const exists = prev.some(msg => msg.id === message.id);
         if (exists) return prev;
         return [...prev, message];
       });
+
+      // Enhanced call invitation detection - just notify, don't show modal
+      const isCallMessage = message.content.includes('📞');
+      console.log('🔍 Checking if call message:', {
+        isCallMessage,
+        hasCallId: !!message.callId,
+        content: message.content,
+        callId: message.callId,
+        senderId: message.sender.id,
+        currentUserId
+      });
+
+      if (isCallMessage && message.callId) {
+        // Don't show notification for our own calls
+        if (message.sender.id !== currentUserId) {
+          console.log('📞 Call message received:', message);
+          
+          // Optional: Play notification sound or vibrate
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Invitación a llamada', {
+              body: message.content,
+              icon: '/favicon.ico'
+            });
+          }
+        } else {
+          console.log('📞 Ignoring own call message');
+        }
+      } else if (isCallMessage) {
+        console.log('⚠️ Call message without callId detected:', message);
+      }
     });
 
     // Typing indicators
@@ -357,6 +483,103 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
     setShowProfileModal(true);
   };
 
+  const handleCallStarted = (callId: string) => {
+    console.log('Call started:', callId);
+    setActiveCallId(callId);
+  };
+
+
+
+  const handleCallClose = () => {
+    setActiveCallId(null);
+  };
+
+    const checkCallStatus = async (callId: string): Promise<'waiting' | 'active' | 'ended' | 'cancelled'> => {
+    try {
+      console.log('🔍 Checking call availability using mobile app approach:', callId);
+      
+      // Use the mobile app approach: check if we can join the call without actually joining
+      // We'll make a lightweight request to see if the call exists and is joinable
+      try {
+        // First try the exact approach from mobile app documentation
+        const response = await fetch(`${API_BASE_URL}/calls/join/${callId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authService.getToken()}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ audioOnly: false })
+        });
+        
+        if (response.ok) {
+          // Call is available and we can join - this means it's active
+          const { call } = await response.json();
+          console.log('📊 Call is available and joinable:', { callId, status: call.status });
+          
+          // Important: We got a successful response, but we haven't actually "joined" the LiveKit room yet
+          // The backend just validated that we can join and gave us a token
+          
+          setCallStatuses(prev => {
+            const newMap = new Map(prev);
+            newMap.set(callId, 'active');
+            return newMap;
+          });
+          
+          return 'active';
+        } else if (response.status === 404 || response.status === 400) {
+          // Call not found or ended (from mobile app docs)
+          console.log('📊 Call not available (404/400):', response.status);
+          
+          setCallStatuses(prev => {
+            const newMap = new Map(prev);
+            newMap.set(callId, 'ended');
+            return newMap;
+          });
+          
+          return 'ended';
+        } else {
+          // Other error - treat as unknown
+          console.log('📊 Other error checking call:', response.status);
+          
+          setCallStatuses(prev => {
+            const newMap = new Map(prev);
+            newMap.set(callId, 'waiting');
+            return newMap;
+          });
+          
+          return 'waiting';
+        }
+      } catch (fetchError) {
+        throw fetchError; // Re-throw to be caught by outer catch
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to check call availability:', error);
+      
+      // Network error or other issue - default to waiting (joinable)
+      console.log('⚠️ Network error, treating as potentially available');
+      setCallStatuses(prev => {
+        const newMap = new Map(prev);
+        newMap.set(callId, 'waiting');
+        return newMap;
+      });
+      return 'waiting';
+    }
+  };
+
+  const handleJoinCall = async (callId: string) => {
+    console.log('📞 Attempting to join call:', callId);
+    
+    // Check if call is still active
+    const status = await checkCallStatus(callId);
+    
+    if (status === 'ended' || status === 'cancelled') {
+      showError('Esta llamada ya ha finalizado', 'Llamada no disponible');
+      return;
+    }
+    
+    setActiveCallId(callId);
+  };
+
   const getInitials = (nombre: string, apellidos: string): string => {
     return `${nombre.charAt(0)}${apellidos.charAt(0)}`.toUpperCase();
   };
@@ -458,13 +681,24 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
                 </div>
               </div>
               
-              {/* Connection status indicator */}
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                <span className="text-xs text-gray-400">
-                  {isConnected ? 'Conectado' : 'Desconectado'}
-                </span>
-              </div>
+                        {/* Call buttons and connection status */}
+          <div className="flex items-center space-x-4">
+            {/* Call Buttons */}
+            {currentConversation && isConnected && (
+              <CallButtons 
+                conversation={currentConversation}
+                onCallStarted={handleCallStarted}
+              />
+            )}
+            
+            {/* Connection status indicator */}
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-xs text-gray-400">
+                {isConnected ? 'Conectado' : 'Desconectado'}
+              </span>
+            </div>
+          </div>
             </div>
           </div>
 
@@ -521,6 +755,40 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
                         )}
                         
                         <p className="text-sm leading-tight break-words">{message.content}</p>
+                        
+                        {/* Call Actions for call messages */}
+                        {message.content.includes('📞') && message.callId && (
+                          <div className="mt-3 flex justify-center">
+                            {(() => {
+                              const callStatus = callStatuses.get(message.callId!) || 'waiting';
+                              
+                              if (callStatus === 'ended' || callStatus === 'cancelled') {
+                                return (
+                                  <div className="px-4 py-2 bg-gray-600 text-gray-300 text-sm rounded-lg flex items-center space-x-2">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                                    </svg>
+                                    <span>Llamada finalizada</span>
+                                  </div>
+                                );
+                              }
+                              
+                              return (
+                                <button
+                                  onClick={() => handleJoinCall(message.callId!)}
+                                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors flex items-center space-x-2 shadow-lg"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                  </svg>
+                                  <span>
+                                    {isOwn ? 'Volver a la llamada' : 'Unirse a llamada'}
+                                  </span>
+                                </button>
+                              );
+                            })()}
+                          </div>
+                        )}
                         
                         <div className="flex items-center justify-end mt-1 space-x-1">
                           <span className={`text-xs ${
@@ -674,6 +942,16 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedCha
         onClose={() => setShowProfileModal(false)}
         userId={selectedUserId || undefined}
       />
+
+
+
+      {/* Video Call Screen */}
+      {activeCallId && (
+        <VideoCallScreen
+          callId={activeCallId}
+          onClose={handleCallClose}
+        />
+      )}
     </>
   );
 };
