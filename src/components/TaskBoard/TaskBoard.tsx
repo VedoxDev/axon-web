@@ -6,7 +6,7 @@ import SectionReorderModal from './SectionReorderModal.tsx';
 import LabelManageModal from './LabelManageModal.tsx';
 import ConfirmModal from './ConfirmModal.tsx';
 import PromptModal from './PromptModal.tsx';
-import type { Task, DynamicColumnType, ProjectSection } from './types.ts';
+import type { Task, ProjectSection } from './types.ts';
 import taskService from '../../services/taskService';
 import projectService from '../../services/projectService';
 import { useAlert } from '../../hooks/useAlert';
@@ -366,7 +366,7 @@ const TaskBoard: React.FC<TaskBoardProps> = ({ projectId }) => {
     });
   };
 
-  const handleMoveSection = async (sectionId: string) => {
+  const handleMoveSection = async () => {
     if (!projectId) return;
     setIsSectionReorderModalOpen(true);
   };

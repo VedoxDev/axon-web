@@ -12,6 +12,8 @@ interface Message {
   isRead: boolean;
 }
 
+// Future implementation interface - currently unused
+/*
 interface ChatGroup {
   id: string;
   name: string;
@@ -20,6 +22,7 @@ interface ChatGroup {
   unreadCount: number;
   isOnline?: boolean;
 }
+*/
 
 const formatTime = (date: Date) => {
   const now = new Date();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTitlebar, useSidebar, useNavigation, useLayout } from '../../contexts/LayoutContext';
+import { useTitlebar, useSidebar, useLayout } from '../../contexts/LayoutContext';
 import { useAlert } from '../../hooks/useAlert';
 import authService from '../../services/authService';
 import { projectService } from '../../services/projectService';
@@ -16,7 +16,7 @@ interface TitlebarProps {
 }
 
 const Titlebar: React.FC<TitlebarProps> = ({ className = '' }) => {
-  const { title, showBackButton, isElectron } = useTitlebar();
+  const { showBackButton, isElectron } = useTitlebar();
   const { toggle: toggleSidebar, selectItem } = useSidebar();
   const { actions } = useLayout();
   const navigate = useNavigate();

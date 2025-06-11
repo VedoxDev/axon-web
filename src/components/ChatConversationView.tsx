@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAlert } from '../hooks/useAlert';
 import chatService, { type ChatMessage, type Conversation } from '../services/chatService';
 import projectService from '../services/projectService';
-import callsService from '../services/callsService';
+// import callsService from '../services/callsService'; // Currently unused
 import authService from '../services/authService';
 import { API_BASE_URL } from '../config/apiConfig';
 import UserProfileModal from './modals/UserProfileModal';
@@ -51,7 +51,7 @@ interface ChatConversationViewProps {
 }
 
 const ChatConversationView: React.FC<ChatConversationViewProps> = ({ selectedChatId }) => {
-  const { showError, showSuccess } = useAlert();
+  const { showError } = useAlert();
   
   // State
   const [messages, setMessages] = useState<ChatMessage[]>([]);

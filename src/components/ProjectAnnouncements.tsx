@@ -18,6 +18,9 @@ const ProjectAnnouncements: React.FC<ProjectAnnouncementsProps> = ({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [userRole, setUserRole] = useState<'owner' | 'admin' | 'member' | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  
+  // Suppress unused warning for now
+  void currentUserId;
 
   const { showError } = useAlert();
 
@@ -88,7 +91,8 @@ const ProjectAnnouncements: React.FC<ProjectAnnouncementsProps> = ({
 
   const AnnouncementCard: React.FC<{ announcement: Announcement }> = ({ announcement }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const typeColor = announcementService.getAnnouncementTypeColor(announcement.type);
+    // Future implementation for type-based colors
+    // const typeColor = announcementService.getAnnouncementTypeColor(announcement.type);
     const typeIcon = announcementService.getAnnouncementTypeIcon(announcement.type);
     const formattedDate = announcementService.formatDate(announcement.createdAt);
 

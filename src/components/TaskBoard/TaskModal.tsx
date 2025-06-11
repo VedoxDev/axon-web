@@ -10,6 +10,9 @@ interface TaskModalProps {
 const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) => {
   const [editedTask, setEditedTask] = useState<Task | null>(task);
   const [isTitleFocused, setIsTitleFocused] = useState(false);
+  
+  // Suppress unused warning
+  void isTitleFocused;
   const [newLabel, setNewLabel] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isVisible, setIsVisible] = useState(false); // For entrance animation
@@ -63,20 +66,21 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
 
   const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (editedTask) {
-      setEditedTask({ ...editedTask, priority: e.target.value as 'minimal' | 'moderate' | 'critical' });
+      setEditedTask({ ...editedTask, priority: e.target.value as 'low' | 'medium' | 'high' | 'critical' });
     }
   };
 
   const handleAddLabel = () => {
     if (editedTask && newLabel.trim() !== '') {
-      setEditedTask({ ...editedTask, labels: [...editedTask.labels, newLabel.trim()] });
+      const newLabelObj = { id: Date.now(), name: newLabel.trim(), color: '#3B82F6' };
+      setEditedTask({ ...editedTask, labels: [...editedTask.labels, newLabelObj] });
       setNewLabel('');
     }
   };
 
-  const handleRemoveLabel = (labelToRemove: string) => {
+  const handleRemoveLabel = (labelToRemove: number) => {
     if (editedTask) {
-      setEditedTask({ ...editedTask, labels: editedTask.labels.filter(label => label !== labelToRemove) });
+      setEditedTask({ ...editedTask, labels: editedTask.labels.filter(label => label.id !== labelToRemove) });
     }
   };
 
@@ -194,7 +198,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
             {isEditing ? (
               <select
                 id="section"
-                value={editedTask?.section}
+                value={editedTask?.section || ''}
                 onChange={handleSectionChange}
                 className="w-full p-2 rounded bg-[#151718] text-white border border-gray-600"
               >
@@ -218,8 +222,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
                 onChange={handlePriorityChange}
                 className="w-full p-2 rounded bg-[#151718] text-white border border-gray-600"
               >
-                <option value="minimal">Minimal</option>
-                <option value="moderate">Moderate</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
                 <option value="critical">Critical</option>
               </select>
             ) : (
@@ -233,9 +238,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
               <>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {editedTask?.labels.map(label => (
-                    <span key={label} className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full flex items-center ">
-                      {label}
-                      <button onClick={() => handleRemoveLabel(label)} className="ml-2 text-white hover:text-red-300">
+                    <span key={label.id} className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full flex items-center ">
+                      {label.name}
+                      <button onClick={() => handleRemoveLabel(label.id)} className="ml-2 text-white hover:text-red-300">
                         &times;
                       </button>
                     </span>
@@ -257,8 +262,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {editedTask?.labels.map(label => (
-                  <span key={label} className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
-                    {label}
+                  <span key={label.id} className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
+                    {label.name}
                   </span>
                 ))}
               </div>
@@ -296,7 +301,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
               <input
                 type="date"
                 id="dueDate"
-                value={editedTask?.dueDate}
+                value={editedTask?.dueDate || ''}
                 onChange={handleDateChange}
                 className="w-full p-2 rounded bg-[#151718] text-white border border-gray-600"
               />
@@ -322,7 +327,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose, onUpdateTask }) =>
 
           <div className="mb-4 border-t border-gray-700 pt-4">
             <h3 className="text-md font-semibold text-gray-400 mb-2">Información</h3>
-            <p className="text-sm text-gray-300">Creado por: <span className="font-medium">{editedTask?.createdBy}</span></p>
+            <p className="text-sm text-gray-300">Creado por: <span className="font-medium">{editedTask?.createdBy?.name}</span></p>
             <p className="text-sm text-gray-300">Fecha de creación: <span className="font-medium">{editedTask?.creationDate}</span></p>
             <p className="text-sm text-gray-300">Última actualización: <span className="font-medium">{editedTask?.lastUpdated}</span></p>
           </div>

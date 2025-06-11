@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useSidebar, useNavigation } from '../contexts/LayoutContext';
 import { useAlert } from '../hooks/useAlert';
-import projectService, { type Project, type ProjectDetails } from '../services/projectService';
+import projectService, { type ProjectDetails } from '../services/projectService';
 import announcementService, { type Announcement } from '../services/announcementService';
 import ChatConversationList from './ChatConversationList';
 import CreateProjectModal from './CreateProjectModal';
@@ -30,18 +30,22 @@ interface UIProject {
 }
 
 const CollapsibleSidebar: React.FC = () => {
-  const { selectedItem, selectItem, setCurrentProject, currentProjectId } = useSidebar();
+  const { selectedItem, selectItem, setCurrentProject } = useSidebar();
   const { selectedChatId, selectChat } = useNavigation();
   const { showError } = useAlert();
   
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
+  
+  // Suppress unused warning
+  void isProjectMenuOpen;
   const [selectedProject, setSelectedProject] = useState<UIProject>({
     id: 'chat',
     name: 'Mensajes',
     color: 'from-blue-500 to-indigo-600'
   });
   const [isMembersOpen, setIsMembersOpen] = useState(false);
-  const [isGeneralChat, setIsGeneralChat] = useState(false);
+  // Future chat implementation variables (currently unused)
+  // const [isGeneralChat, setIsGeneralChat] = useState(false);
   const [projects, setProjects] = useState<UIProject[]>([]);
   const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(null);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);

@@ -29,7 +29,7 @@ const PersonalTasksModal: React.FC<PersonalTasksModalProps> = ({ isOpen, onClose
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTask, setEditingTask] = useState<PersonalTask | null>(null);
-  const { showSuccess, showError } = useAlert();
+  const { showError } = useAlert();
 
   // Priority colors from API documentation
   const getPriorityColor = (priority: number): string => {

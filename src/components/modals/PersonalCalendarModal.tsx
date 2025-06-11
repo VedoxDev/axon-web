@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, eachDayOfInterval, isSameMonth, isToday, isSameDay, parseISO, isAfter, isBefore, addMinutes } from 'date-fns';
 import { es } from 'date-fns/locale';
 import callsService, { type Meeting } from '../../services/callsService';
@@ -139,7 +139,7 @@ const PersonalCalendarModal: React.FC<PersonalCalendarModalProps> = ({ isOpen, o
       setIsLoading(true);
       
       // Load projects first (required for task loading)
-      const projectsData = await loadProjects();
+      await loadProjects(); // Load projects for future use
       
       // Then load meetings and tasks in parallel
       await Promise.all([

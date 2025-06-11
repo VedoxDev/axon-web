@@ -1,4 +1,4 @@
-import React from 'react';
+// Logo component
 import { useNavigate } from 'react-router-dom';
 import LogoImage from '../assets/images/Logo_Login.png';
 

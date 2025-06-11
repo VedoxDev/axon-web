@@ -91,6 +91,8 @@ export interface Task {
   };
   createdAt: string;
   updatedAt: string;
+  creationDate: string; // Add missing property
+  lastUpdated: string;   // Add missing property
   order: number;
 }
 
@@ -135,7 +137,7 @@ class TaskService {
   }
 
   // Convert UI priority to API priority
-  private convertPriorityToAPI(uiPriority: 'low' | 'medium' | 'high' | 'critical'): 1 | 2 | 3 | 4 {
+  convertPriorityToAPI(uiPriority: 'low' | 'medium' | 'high' | 'critical'): 1 | 2 | 3 | 4 {
     switch (uiPriority) {
       case 'low': return 1;
       case 'medium': return 2;
@@ -167,6 +169,8 @@ class TaskService {
       },
       createdAt: apiTask.createdAt,
       updatedAt: apiTask.updatedAt,
+      creationDate: apiTask.createdAt, // Map to existing property
+      lastUpdated: apiTask.updatedAt,  // Map to existing property
       order: apiTask.order
     };
   }

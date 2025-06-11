@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAlert } from '../hooks/useAlert';
-import chatService, { type ChatMessage, type Conversation, type TypingEvent, type OnlineUser } from '../services/chatService';
+import chatService, { type ChatMessage, type Conversation } from '../services/chatService';
 import projectService from '../services/projectService';
 
 interface ChatPanelProps {
@@ -8,7 +8,7 @@ interface ChatPanelProps {
   onSelectChat?: (chatId: string | null) => void;
 }
 
-const ChatPanel: React.FC<ChatPanelProps> = ({ selectedChatId, onSelectChat }) => {
+const ChatPanel: React.FC<ChatPanelProps> = ({ selectedChatId }) => {
   const { showError, showSuccess } = useAlert();
   
   // State

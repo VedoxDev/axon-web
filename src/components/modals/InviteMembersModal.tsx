@@ -312,7 +312,7 @@ const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {selectedUsers.slice(0, 3).map((user, idx) => (
+                  {selectedUsers.slice(0, 3).map((user) => (
                     <div
                       key={user.id}
                       className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"

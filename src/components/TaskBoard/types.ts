@@ -4,6 +4,9 @@ export type { Task, ProjectLabel, ProjectSection } from '../../services/taskServ
 // Dynamic column type that can be any section ID
 export type DynamicColumnType = string; // Using string to accommodate any section ID
 
+// Task column type for legacy compatibility
+export type TaskColumnType = string;
+
 // Section mapping for the UI
 export interface TaskSection {
   id: number;

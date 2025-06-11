@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAlert } from '../hooks/useAlert';
-import chatService, { type Conversation, type OnlineUser } from '../services/chatService';
+import chatService, { type Conversation } from '../services/chatService';
 import projectService from '../services/projectService';
 
 interface ChatConversationListProps {
@@ -18,6 +18,9 @@ const ChatConversationList: React.FC<ChatConversationListProps> = ({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
+  
+  // Suppress unused variable warning
+  void isConnected;
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

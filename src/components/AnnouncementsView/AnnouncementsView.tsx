@@ -8,16 +8,7 @@ interface Announcement {
   type: 'type1' | 'type2'; // To differentiate styling (border color)
 }
 
-const style = `
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .hide-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-`;
+// Unused style variable removed - CSS classes used directly in className
 
 const mockAnnouncements: Announcement[] = [
   {
