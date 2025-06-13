@@ -26,6 +26,8 @@ function ResetPasswordPage() {
 
   // Verify token on component mount
   useEffect(() => {
+    let isMounted = true;
+
     const verifyToken = async () => {
       if (!resetToken) {
         setIsValidating(false);
@@ -37,6 +39,8 @@ function ResetPasswordPage() {
         const response = await fetch(`${API_BASE_URL}/auth/verify-reset-token/${resetToken}`);
         const data = await response.json();
 
+        if (!isMounted) return;
+
         if (response.ok) {
           setIsValidToken(true);
           setUserEmail(data.email);
@@ -45,15 +49,19 @@ function ResetPasswordPage() {
           showError('El enlace de recuperación es inválido o ha expirado.', 'Enlace inválido');
         }
       } catch (error) {
+        if (!isMounted) return;
         setIsValidToken(false);
         showError('Error al verificar el enlace de recuperación.', 'Error');
       } finally {
-        setIsValidating(false);
+        if (isMounted) {
+          setIsValidating(false);
+        }
       }
     };
 
     verifyToken();
-  }, [resetToken, showError]);
+    return () => { isMounted = false; };
+  }, [resetToken]);
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

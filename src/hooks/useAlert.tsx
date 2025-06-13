@@ -34,7 +34,8 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
     title?: string, 
     duration = 5000
   ) => {
-    const id = Date.now().toString();
+    // Generate unique ID with timestamp + random number to prevent duplicates
+    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newAlert: AlertData = {
       id,
       type,
@@ -43,7 +44,20 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
       duration
     };
 
-    setAlerts(prev => [...prev, newAlert]);
+    setAlerts(prev => {
+      // Check if there's already an alert with the same message and type
+      // to prevent duplicate alerts
+      const existingAlert = prev.find(
+        alert => alert.message === message && alert.type === type && alert.title === title
+      );
+      
+      if (existingAlert) {
+        // Don't add duplicate alert
+        return prev;
+      }
+      
+      return [...prev, newAlert];
+    });
   };
 
   const showSuccess = (message: string, title?: string) => {
